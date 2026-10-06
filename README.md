@@ -51,7 +51,8 @@ Open each one in the app with the mode set to *Repris*, keep the ones you like, 
 | Key | Action |
 |---|---|
 | `1`–`9`, `0` | Forge sketch 1–10 |
-| `P` / `F` | Presentation mode (hides the sidebar) |
+| `F` | Fullscreen presentation (Esc to leave) |
+| `P` | Presentation mode without fullscreen (hides the sidebar) |
 | `C` | Show the code as it's written |
 | `E` | Jump to the edit field |
 | `←` `→` | Previous / next version |

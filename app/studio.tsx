@@ -78,6 +78,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const [prompt, setPrompt] = useState("");
   const [edit, setEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [replays, setReplays] = useState<Record<string, string | null>>({});
 
@@ -169,6 +170,19 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
     }, 100);
     return () => clearInterval(iv);
   }, [busy]);
+
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(null), 2600);
+    return () => clearTimeout(t);
+  }, [flash]);
+
+  // Leaving browser fullscreen (Esc) also leaves presentation mode.
+  useEffect(() => {
+    const onFs = () => !document.fullscreenElement && setPresenting(false);
+    document.addEventListener("fullscreenchange", onFs);
+    return () => document.removeEventListener("fullscreenchange", onFs);
+  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -347,8 +361,11 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         }
         if (!alive()) return;
         post({ type: "end" });
-        setElapsed((performance.now() - t0Ref.current) / 1000);
-        setLines(htmlRef.current.split("\n").length);
+        const secs = (performance.now() - t0Ref.current) / 1000;
+        const n = htmlRef.current.split("\n").length;
+        setElapsed(secs);
+        setLines(n);
+        setFlash(`Klar på ${secs.toFixed(1).replace(".", ",")} s · ${n} rader kod`);
         setCodeTail(htmlRef.current.slice(-4000));
         const version = { html: htmlRef.current, label: opts.label, slug: opts.slug };
         const next = [...versionsRef.current.slice(0, vIdxRef.current + 1), version];
@@ -445,6 +462,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       const v = versionsRef.current[i];
       if (!v || busy) return;
       setVIdx(i);
+      setFlash(null);
       setCodeTail(v.html.slice(-4000));
       setLines(v.html.split("\n").length);
       reloadPreview();
@@ -489,7 +507,14 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       if (k >= 0 && SKETCHES[k] && !busy) {
         e.preventDefault();
         forgeSketch(SKETCHES[k]);
-      } else if (e.key === "p" || e.key === "f") setPresenting((v) => !v);
+      } else if (e.key === "p") setPresenting((v) => !v);
+      else if (e.key === "f") {
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        else {
+          setPresenting(true);
+          document.documentElement.requestFullscreen?.().catch(() => {});
+        }
+      }
       else if (e.key === "c") setSettings((s) => ({ ...s, code: !s.code }));
       else if (e.key === "e") {
         e.preventDefault();
@@ -577,7 +602,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
           {phase !== "idle" && (
             <>
               <span className="sep" />
-              <span>{elapsed.toFixed(1)} s</span>
+              <span>{elapsed.toFixed(1).replace(".", ",")} s</span>
               <span className="sep hide-sm" />
               <span className="hide-sm">{lines} rader</span>
             </>
@@ -743,7 +768,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
                 </p>
                 <div className="keys">
                   <span><kbd>1</kbd>–<kbd>0</kbd>skisser</span>
-                  <span><kbd>P</kbd>presentera</span>
+                  <span><kbd>F</kbd>helskärm</span>
                   <span><kbd>C</kbd>kod</span>
                   {liveAvailable && <span><kbd>E</kbd>ändra</span>}
                   <span><kbd>Esc</kbd>stoppa</span>
@@ -776,6 +801,12 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             {phase === "building" && !sourceImage && sourceText && (
               <div className="pip text" key={sourceText}>
                 {sourceText}
+              </div>
+            )}
+
+            {flash && phase === "done" && (
+              <div className="flash" key={flash}>
+                <span>✓</span> {flash}
               </div>
             )}
 

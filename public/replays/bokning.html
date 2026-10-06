@@ -129,7 +129,7 @@ const FULL={'2026-10-6':1,'2026-10-7':1,'2026-10-21':1};
 const BUSY={'2026-10-14':[1]};
 const booked={};
 const $=s=>document.querySelector(s);
-const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+const today=new Date(2026,9,1);
 const key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 const short=d=>`${d.getDate()} ${MON[d.getMonth()].slice(0,3)} ${d.getFullYear()}`;
 const long=d=>`${DAY[d.getDay()]} ${short(d)}`;
