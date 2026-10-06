@@ -22,6 +22,7 @@ const SETTINGS_KEY = "smedjan.settings";
 const FIRST_EVENT_MS = 8_000; // API never answered → fall back
 const FIRST_HTML_MS = 40_000; // API answered but no output yet → fall back
 const STALL_MS = 20_000; // output stopped mid-stream → fall back
+const NO_KEY = "Live-byggen kräver en API-nyckel på servern";
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
 class Stopped extends Error {}
@@ -61,7 +62,7 @@ function loadSettings(): Settings {
   }
 }
 
-export function Studio({ gate }: { gate: boolean }) {
+export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boolean }) {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [presenting, setPresenting] = useState(false);
@@ -310,7 +311,7 @@ export function Studio({ gate }: { gate: boolean }) {
       const run = ++runRef.current;
       abortRef.current?.abort();
       const alive = () => run === runRef.current;
-      const { mode } = settingsRef.current;
+      const mode: Mode = liveAvailable ? settingsRef.current.mode : "replay";
       const fallback = mode !== "live" ? opts.replayHtml ?? null : null;
 
       resetBuild();
@@ -323,6 +324,11 @@ export function Studio({ gate }: { gate: boolean }) {
       setElapsed(0);
       setShowSettings(false);
       t0Ref.current = performance.now();
+
+      if (!liveAvailable && !fallback) {
+        setToast(NO_KEY);
+        return;
+      }
 
       try {
         if (mode === "replay" && fallback) {
@@ -361,7 +367,7 @@ export function Studio({ gate }: { gate: boolean }) {
         } else if (startedRef.current) post({ type: "end" });
       }
     },
-    [live, post, replay, reloadPreview],
+    [live, post, replay, reloadPreview, liveAvailable],
   );
 
   const stop = useCallback(() => {
@@ -397,6 +403,7 @@ export function Studio({ gate }: { gate: boolean }) {
 
   const forgeUpload = useCallback(
     async (file: File) => {
+      if (!liveAvailable) return setToast(NO_KEY);
       if (!file.type.startsWith("image/")) return setToast("Det där är ingen bild");
       let url: string;
       try {
@@ -410,7 +417,7 @@ export function Studio({ gate }: { gate: boolean }) {
         { label: file.name || "Bild", slug: slugify(file.name.replace(/\.[^.]+$/, "")) },
       );
     },
-    [forge],
+    [forge, liveAvailable],
   );
 
   const forgeText = useCallback(() => {
@@ -599,6 +606,13 @@ export function Studio({ gate }: { gate: boolean }) {
         )}
         {showSettings && (
           <div className="popover" role="dialog" aria-label="Inställningar">
+            {!liveAvailable && (
+              <p className="note">
+                Ingen API-nyckel på servern: skisserna spelas upp från förinspelade byggen. Lägg till <code>ANTHROPIC_API_KEY</code> och{" "}
+                <code>APP_PASSCODE</code> i Vercel för live-byggen, fritext och ändringar.
+              </p>
+            )}
+            {liveAvailable && (
             <div>
               <label>Byggläge</label>
               <div className="seg">
@@ -609,6 +623,8 @@ export function Studio({ gate }: { gate: boolean }) {
                 ))}
               </div>
             </div>
+            )}
+            {liveAvailable && (
             <p className="note">
               {settings.mode === "auto"
                 ? "Bygger live. Om AI:n inte svarar eller nätet strular spelas en förinspelad version upp automatiskt."
@@ -616,6 +632,7 @@ export function Studio({ gate }: { gate: boolean }) {
                   ? "Alltid live, ingen reserv."
                   : "Spelar upp förinspelade byggen för skisserna. Fritext och ändringar går fortfarande live."}
             </p>
+            )}
             <div>
               <label>Repris-hastighet · {settings.speed} tecken/s</label>
               <input type="range" min={300} max={4000} step={100} value={settings.speed} onChange={(e) => setSettings((s) => ({ ...s, speed: Number(e.target.value) }))} />
@@ -656,6 +673,7 @@ export function Studio({ gate }: { gate: boolean }) {
           </section>
         ))}
 
+        {liveAvailable && (
         <section className="composer">
           <h3>Eller beskriv en idé</h3>
           <textarea
@@ -680,6 +698,7 @@ export function Studio({ gate }: { gate: boolean }) {
             Du kan också släppa eller klistra in en egen bild var som helst. <kbd>⌘</kbd>+<kbd>↵</kbd> smider.
           </p>
         </section>
+        )}
       </aside>
 
       <main className="stage">
@@ -717,12 +736,16 @@ export function Studio({ gate }: { gate: boolean }) {
                   <br />
                   <em>Se den smidas.</em>
                 </h1>
-                <p>Välj en handritad skiss eller beskriv en idé, så byggs en fungerande app framför dina ögon.</p>
+                <p>
+                  {liveAvailable
+                    ? "Välj en handritad skiss eller beskriv en idé, så byggs en fungerande app framför dina ögon."
+                    : "Välj en handritad skiss, så byggs en fungerande app framför dina ögon."}
+                </p>
                 <div className="keys">
                   <span><kbd>1</kbd>–<kbd>0</kbd>skisser</span>
                   <span><kbd>P</kbd>presentera</span>
                   <span><kbd>C</kbd>kod</span>
-                  <span><kbd>E</kbd>ändra</span>
+                  {liveAvailable && <span><kbd>E</kbd>ändra</span>}
                   <span><kbd>Esc</kbd>stoppa</span>
                 </div>
               </div>
@@ -767,7 +790,9 @@ export function Studio({ gate }: { gate: boolean }) {
           </div>
         </div>
 
+        {(liveAvailable || versions.length > 1) && (
         <div className="dock">
+          {liveAvailable && (
           <div className={`edit${!current || busy ? " disabled" : ""}`}>
             <I.Wand />
             <input
@@ -782,6 +807,7 @@ export function Studio({ gate }: { gate: boolean }) {
               Ändra
             </button>
           </div>
+          )}
           {versions.length > 1 && (
             <div className="versions">
               <button className="icon-btn" onClick={() => showVersion(vIdx - 1)} disabled={busy || vIdx <= 0} title="Föregående version (←)">
@@ -796,6 +822,7 @@ export function Studio({ gate }: { gate: boolean }) {
             </div>
           )}
         </div>
+        )}
       </main>
 
       {toast && (

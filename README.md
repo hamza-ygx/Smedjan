@@ -7,6 +7,10 @@ Live stage demo: pick a hand-drawn sketch (or type an idea) and a working app is
 - **Follow-ups:** "gör den mörk", "lägg till ett diagram". Each edit rebuilds from the current version, with version history (← →).
 - **Safety net:** every sketch has a cached build. In *Auto* mode, if the API is slow, errors, or the network dies, the cached build replays silently at the same pace. A tiny dot in the status pill tells you which happened (green = live, amber = replay).
 
+## Without an API key
+
+Smedjan runs fine with no `ANTHROPIC_API_KEY`: it locks to the cached replays, so all 10 sketches still build in front of the audience. Free text, image drop and edits are hidden, and the settings panel says why. The API route refuses live calls, so nothing can spend credit. Add `ANTHROPIC_API_KEY` **and** `APP_PASSCODE` in Vercel and redeploy to switch live mode on. The passcode gate also turns on then.
+
 ## Run locally
 
 ```bash
