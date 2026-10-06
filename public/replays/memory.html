@@ -14,11 +14,13 @@ h1 span{display:inline-block;padding-bottom:6px;background:linear-gradient(var(-
 .stats{display:flex;align-items:center;gap:8px}
 .pill{display:flex;align-items:baseline;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:7px 13px;font-size:13.5px;color:var(--muted);font-weight:600;box-shadow:0 1px 2px rgba(20,30,60,.04)}
 .pill b{font-size:17px;color:var(--ink);font-weight:750;font-variant-numeric:tabular-nums}
+.pill[hidden]{display:none}
 .pill.best{margin-left:auto;background:none;border-color:transparent;box-shadow:none;padding-right:0}
 .pill.best b{font-size:14.5px;color:var(--accent)}
 .prog{height:6px;border-radius:3px;background:#e6e8ee;overflow:hidden}
 .prog i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .5s cubic-bezier(.3,.7,.3,1)}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card,.card:disabled{color:var(--ink)}
 .card{font:inherit;aspect-ratio:1;border:0;padding:0;background:none;cursor:pointer;perspective:800px;border-radius:16px;-webkit-tap-highlight-color:transparent}
 .card:focus-visible{outline:3px solid rgba(232,89,12,.4);outline-offset:3px}
 .in{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.2,.2,1.2)}
@@ -53,6 +55,7 @@ h1 span{display:inline-block;padding-bottom:6px;background:linear-gradient(var(-
 .box p{color:var(--muted);font-size:15.5px;margin-bottom:18px}
 .res{display:flex;justify-content:center;gap:12px;margin-bottom:22px}
 .res div{background:var(--bg);border-radius:12px;padding:10px 20px;min-width:96px}
+.box .btn{margin:0 auto}
 .res b{display:block;font-size:24px;font-weight:780;font-variant-numeric:tabular-nums}
 .res span{font-size:12.5px;color:var(--muted);font-weight:650;text-transform:uppercase;letter-spacing:.05em}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}
@@ -67,7 +70,7 @@ h1 span{display:inline-block;padding-bottom:6px;background:linear-gradient(var(-
     <div class="pill">Drag <b id="moves">0</b></div>
     <div class="pill">Tid <b id="time">0:00</b></div>
     <div class="pill">Par <b id="pairs">0/8</b></div>
-    <div class="pill best">Bästa: <b id="best">–</b></div>
+    <div class="pill best" id="bestPill" hidden>Bästa: <b id="best">–</b></div>
   </div>
   <div class="prog"><i id="bar"></i></div>
 
@@ -157,15 +160,17 @@ function win(){
   clearInterval(timer);timer=null;secs=Math.floor((Date.now()-start)/1000);render();
   const rec=best===null||moves<best.m||(moves===best.m&&secs<best.s);
   if(rec)best={m:moves,s:secs};
-  $('best').textContent=best.m+' drag · '+fmt(best.s);
+  $('bestPill').hidden=false;$('best').textContent=best.m+' drag · '+fmt(best.s);
   $('wMoves').textContent=nf.format(moves);$('wTime').textContent=fmt(secs);
   $('winMsg').textContent=rec?'Nytt personligt rekord – alla 8 par hittade.':'Alla 8 par hittade. Rekordet är '+best.m+' drag.';
   $('win').classList.add('show');confetti();
 }
 
 const cv=$('fx'),ctx=cv.getContext('2d');let parts=[],raf=0;
+function size(){const dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',size);
 function confetti(){
-  const dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  size();
   const cols=['#e8590c','#f08a3c','#ffb547','#1b2236','#2f9e6b','#4c6ef5','#ffd43b'];
   for(let i=0;i<220;i++){const left=i%2===0;parts.push({x:left?-10:innerWidth+10,y:innerHeight*(.55+Math.random()*.3),vx:(left?1:-1)*(5+Math.random()*9),vy:-(9+Math.random()*11),w:6+Math.random()*7,h:9+Math.random()*9,r:Math.random()*6,vr:(Math.random()-.5)*.35,c:cols[i%cols.length],o:1})}
   if(!raf)tick();
