@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PROMPT_IDEAS, SKETCHES, sketchImage, sketchReplay, type Sketch } from "@/lib/sketches";
+import { PROMPT_IDEAS, SKETCHES, sketchImage, sketchReplay, type Sketch, type SketchTab } from "@/lib/sketches";
 import { Sparks } from "./sparks";
 import * as I from "./icons";
 
@@ -79,6 +79,8 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const [edit, setEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [tab, setTab] = useState<SketchTab>("skisser");
+  const visible = useMemo(() => SKETCHES.filter((s) => s.tab === tab), [tab]);
   const [dragging, setDragging] = useState(false);
   const [replays, setReplays] = useState<Record<string, string | null>>({});
 
@@ -411,7 +413,12 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         { kind: "sketch", sketch },
         async () => {
           const blob = await (await fetch(sketchImage(sketch.id))).blob();
-          return { kind: "image", image: { data: await blobToBase64(blob), mediaType: "image/jpeg" }, title: sketch.title };
+          return {
+            kind: "image",
+            image: { data: await blobToBase64(blob), mediaType: "image/jpeg" },
+            title: sketch.title,
+            note: sketch.brief,
+          };
         },
         { replayHtml: replaysRef.current[sketch.id], label: sketch.title, slug: sketch.id },
       ),
@@ -504,10 +511,11 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       }
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
       const k = KEYS.indexOf(e.key);
-      if (k >= 0 && SKETCHES[k] && !busy) {
+      if (k >= 0 && visible[k] && !busy) {
         e.preventDefault();
-        forgeSketch(SKETCHES[k]);
-      } else if (e.key === "p") setPresenting((v) => !v);
+        forgeSketch(visible[k]);
+      } else if (e.key === "l") setTab((t) => (t === "skisser" ? "lagenheter" : "skisser"));
+      else if (e.key === "p") setPresenting((v) => !v);
       else if (e.key === "f") {
         if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
         else {
@@ -563,21 +571,28 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       window.removeEventListener("dragover", onOver);
       window.removeEventListener("drop", onDrop);
     };
-  }, [busy, stop, forgeSketch, forgeUpload, showVersion]);
+  }, [busy, stop, forgeSketch, forgeUpload, showVersion, visible]);
 
   // ---------- render ----------
   const grouped = useMemo(() => {
     const g = new Map<string, { sketch: Sketch; key: string }[]>();
-    SKETCHES.forEach((sketch, i) => {
+    visible.forEach((sketch, i) => {
       if (!g.has(sketch.category)) g.set(sketch.category, []);
       g.get(sketch.category)!.push({ sketch, key: KEYS[i] });
     });
     return [...g.entries()];
-  }, []);
+  }, [visible]);
 
   const phaseLabel: Record<Phase, string> = {
     idle: "Redo",
-    thinking: source?.kind === "edit" ? "Funderar på ändringen…" : source?.kind === "text" ? "Tolkar idén…" : "Läser skissen…",
+    thinking:
+      source?.kind === "edit"
+        ? "Funderar på ändringen…"
+        : source?.kind === "text"
+          ? "Tolkar idén…"
+          : source?.kind === "sketch" && source.sketch.tab === "lagenheter"
+            ? "Läser planritningen…"
+            : "Läser skissen…",
     building: "Smider…",
     done: "Klar",
     error: "Något gick fel",
@@ -674,10 +689,22 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       </header>
 
       <aside className="sidebar">
+        <div className="seg tabs" role="tablist">
+          {(
+            [
+              ["skisser", "Skisser"],
+              ["lagenheter", "Lägenheter"],
+            ] as [SketchTab, string][]
+          ).map(([id, label]) => (
+            <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "on" : ""} onClick={() => setTab(id)} title="Byt flik (L)">
+              {label}
+            </button>
+          ))}
+        </div>
         {grouped.map(([cat, items]) => (
           <section key={cat}>
             <h3>{cat}</h3>
-            <div className="sketch-grid">
+            <div className={`sketch-grid${tab === "lagenheter" ? " wide" : ""}`}>
               {items.map(({ sketch, key }) => (
                 <button
                   key={sketch.id}
@@ -691,6 +718,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
                     {sketch.title}
                     <kbd>{key}</kbd>
                   </span>
+                  {sketch.subtitle && <span className="sub">{sketch.subtitle}</span>}
                   {replays[sketch.id] && <span className="cached" />}
                 </button>
               ))}
@@ -768,6 +796,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
                 </p>
                 <div className="keys">
                   <span><kbd>1</kbd>–<kbd>0</kbd>skisser</span>
+                  <span><kbd>L</kbd>lägenheter</span>
                   <span><kbd>F</kbd>helskärm</span>
                   <span><kbd>C</kbd>kod</span>
                   {liveAvailable && <span><kbd>E</kbd>ändra</span>}

@@ -286,3 +286,164 @@ export const sketches = [
     ],
   },
 ];
+
+// ---------- Apartment floor plans (coordinates in metres) ----------
+function apartment(a) {
+  const { S, ox, oy } = a;
+  const X = (m) => ox + m * S;
+  const Y = (m) => oy + m * S;
+  const els = [];
+  for (const [x1, y1, x2, y2, thin] of a.walls) els.push({ t: "wall", x1: X(x1), y1: Y(y1), x2: X(x2), y2: Y(y2), thin });
+  for (const [x1, y1, x2, y2] of a.windows) els.push({ t: "win", x1: X(x1), y1: Y(y1), x2: X(x2), y2: Y(y2) });
+  for (const [x1, y1, x2, y2] of a.openings || []) els.push({ t: "gap", x1: X(x1), y1: Y(y1), x2: X(x2), y2: Y(y2) });
+  for (const d of a.doors) els.push({ t: "door", x: X(d.x), y: Y(d.y), r: d.r * S, a: d.a, s: d.s });
+  for (const f of a.furniture) {
+    if (f.c) els.push({ t: "circle", x: X(f.x), y: Y(f.y), d: f.d * S, fill: f.fill, gap: 9, sw: 1.8 });
+    else if (f.e) els.push({ t: "ellipse", x: X(f.x), y: Y(f.y), w: f.w * S, h: f.h * S });
+    else els.push({ t: "box", x: X(f.x), y: Y(f.y), w: f.w * S, h: f.h * S, fill: f.fill, gap: f.gap || 10, dashed: f.dashed });
+  }
+  for (const r of a.rooms) els.push({ t: "room", x: X(r.x), y: Y(r.y), name: r.name, area: r.area, size: r.size || 32 });
+  els.push({ t: "scale", x: ox, y: a.scaleY, px: S, n: 3 });
+  els.push({ t: "title", x: 70, y: 95, text: a.title, size: 64 });
+  els.push({ t: "text", x: 72, y: 150, text: a.subtitle, size: 34 });
+  a.info.forEach((line, i) => els.push({ t: "text", x: 1010, y: 300 + i * 54, text: line, size: i ? 34 : 38, bold: i === 0 }));
+  els.push({ t: "line", x1: 1000, y1: 250, x2: 1360, y2: 250, light: true });
+  els.push({ t: "compass", x: 1290, y: 120 });
+  return [...els, ...a.notes];
+}
+
+const ink = "#1f2a44";
+const wood = "#a0522d";
+
+sketches.push(
+  {
+    id: "lgh-etta",
+    els: apartment({
+      S: 110, ox: 110, oy: 250, scaleY: 900,
+      title: "Etta · Vasastan",
+      subtitle: "1 rok · 34 m² · 3 tr · hiss",
+      walls: [[0, 0, 7, 0], [7, 0, 7, 5], [7, 5, 0, 5], [0, 5, 0, 0], [0, 3.2, 7, 3.2, 1], [2.4, 3.2, 2.4, 5, 1], [5.2, 3.2, 5.2, 5, 1]],
+      windows: [[0.9, 0, 2.3, 0], [4.3, 0, 5.7, 0], [7, 0.8, 7, 2.2]],
+      openings: [[3.0, 3.2, 4.1, 3.2]],
+      doors: [{ x: 3.5, y: 5, r: 0.9, a: 0, s: -1 }, { x: 2.4, y: 3.55, r: 0.8, a: 90, s: 1 }, { x: 5.2, y: 3.55, r: 0.8, a: 90, s: -1 }],
+      furniture: [
+        { x: 0.05, y: 0.35, w: 0.6, h: 2.5, fill: ink, gap: 7 },
+        { c: 1, x: 1.75, y: 1.9, d: 0.9 },
+        { x: 2.9, y: 2.15, w: 2.0, h: 0.8, fill: wood },
+        { x: 5.25, y: 0.15, w: 1.6, h: 2.05 },
+        { x: 5.35, y: 0.25, w: 0.6, h: 0.35 },
+        { x: 6.15, y: 0.25, w: 0.6, h: 0.35 },
+        { x: 0.1, y: 3.35, w: 0.75, h: 1.5 },
+        { e: 1, x: 1.95, y: 4.55, w: 0.45, h: 0.6 },
+      ],
+      rooms: [
+        { x: 3.6, y: 1.15, name: "Rum & kök", area: "22 m²" },
+        { x: 1.65, y: 3.95, name: "Bad", area: "4 m²", size: 28 },
+        { x: 3.8, y: 4.05, name: "Hall", area: "5 m²", size: 28 },
+        { x: 6.1, y: 4.05, name: "Klk", area: "3 m²", size: 28 },
+      ],
+      info: ["Pris 2 950 000 kr", "Avgift 2 140 kr/mån", "Byggår 1912", "Fransk balkong"],
+      notes: [
+        { t: "note", x: 1000, y: 580, text: "visa lägenheten\ni 3D – rotera!", to: [880, 450] },
+        { t: "note", x: 1000, y: 800, text: "räkna ut vad den\nkostar per månad", noArrow: true },
+      ],
+    }),
+  },
+  {
+    id: "lgh-tvaa",
+    els: apartment({
+      S: 82, ox: 120, oy: 300, scaleY: 945,
+      title: "Tvåa · Södermalm",
+      subtitle: "2 rok · 56 m² · balkong i söderläge",
+      walls: [[0, 0, 8, 0], [8, 0, 8, 7], [8, 7, 0, 7], [0, 7, 0, 0], [4.8, 0, 4.8, 4.2, 1], [0, 4.2, 8, 4.2, 1], [3.4, 4.2, 3.4, 7, 1], [5.8, 4.2, 5.8, 7, 1]],
+      windows: [[0.5, 0, 1.9, 0], [5.6, 0, 7.2, 0], [0, 5.0, 0, 6.4], [8, 1.2, 8, 2.8]],
+      openings: [[3.4, 4.9, 3.4, 6.1]],
+      doors: [
+        { x: 2.5, y: 0, r: 0.85, a: 0, s: -1 },
+        { x: 4.2, y: 7, r: 0.9, a: 0, s: -1 },
+        { x: 3.6, y: 4.2, r: 0.8, a: 0, s: -1 },
+        { x: 5.0, y: 4.2, r: 0.75, a: 0, s: -1 },
+        { x: 5.8, y: 5.0, r: 0.75, a: 90, s: -1 },
+      ],
+      furniture: [
+        { x: 0.6, y: -1.35, w: 3.0, h: 1.35, dashed: true },
+        { x: 0.35, y: 3.2, w: 2.4, h: 0.85, fill: wood },
+        { x: 1.0, y: 2.0, w: 1.1, h: 0.6 },
+        { x: 5.5, y: 0.35, w: 1.8, h: 2.05 },
+        { x: 5.65, y: 0.45, w: 0.65, h: 0.35 },
+        { x: 6.5, y: 0.45, w: 0.65, h: 0.35 },
+        { x: 0.05, y: 4.35, w: 0.6, h: 2.5, fill: ink, gap: 7 },
+        { c: 1, x: 2.1, y: 5.7, d: 1.0 },
+        { x: 7.0, y: 4.4, w: 0.9, h: 0.9 },
+        { e: 1, x: 6.3, y: 6.5, w: 0.45, h: 0.6 },
+      ],
+      rooms: [
+        { x: 2.4, y: 1.0, name: "Vardagsrum", area: "20 m²" },
+        { x: 6.4, y: 3.1, name: "Sovrum", area: "13 m²" },
+        { x: 1.9, y: 5.0, name: "Kök", area: "9,5 m²", size: 30 },
+        { x: 4.6, y: 6.0, name: "Hall", area: "6,5 m²", size: 28 },
+        { x: 6.9, y: 5.9, name: "Bad", area: "6 m²", size: 28 },
+        { x: 2.1, y: -0.75, name: "Balkong", area: "4 m²", size: 26 },
+      ],
+      info: ["Pris 4 450 000 kr", "Avgift 3 120 kr/mån", "Byggår 1938", "Balkong · Hiss"],
+      notes: [
+        { t: "note", x: 1000, y: 580, text: "klicka på ett rum\n→ visa yta", to: [720, 500] },
+        { t: "note", x: 560, y: 175, text: "sol hela eftermiddagen ☀", to: [440, 230] },
+        { t: "note", x: 1000, y: 800, text: "månadskostnad:\nlån + avgift", noArrow: true },
+      ],
+    }),
+  },
+  {
+    id: "lgh-trea",
+    els: apartment({
+      S: 76, ox: 100, oy: 330, scaleY: 945,
+      title: "Trea · Kungsholmen",
+      subtitle: "3 rok · 78 m² · barnvänligt",
+      walls: [
+        [0, 0, 10, 0], [10, 0, 10, 7.8], [10, 7.8, 0, 7.8], [0, 7.8, 0, 0],
+        [5.0, 0, 5.0, 4.4, 1], [7.4, 0, 7.4, 4.4, 1], [0, 4.4, 10, 4.4, 1],
+        [4.0, 4.4, 4.0, 7.8, 1], [8.2, 4.4, 8.2, 7.8, 1], [6.4, 6.4, 6.4, 7.8, 1], [6.4, 6.4, 8.2, 6.4, 1],
+      ],
+      windows: [[0.6, 0, 2.6, 0], [5.6, 0, 6.8, 0], [8.0, 0, 9.4, 0], [0, 5.2, 0, 6.8], [10, 5.4, 10, 6.6]],
+      openings: [[4.0, 5.0, 4.0, 6.4], [6.8, 6.4, 7.6, 6.4]],
+      doors: [
+        { x: 3.2, y: 0, r: 0.85, a: 0, s: -1 },
+        { x: 5.0, y: 7.8, r: 0.9, a: 0, s: -1 },
+        { x: 4.2, y: 4.4, r: 0.75, a: 0, s: -1 },
+        { x: 5.4, y: 4.4, r: 0.75, a: 0, s: -1 },
+        { x: 7.5, y: 4.4, r: 0.7, a: 0, s: -1 },
+        { x: 8.2, y: 5.1, r: 0.75, a: 90, s: -1 },
+      ],
+      furniture: [
+        { x: 0.6, y: -1.4, w: 3.6, h: 1.4, dashed: true },
+        { x: 0.4, y: 3.4, w: 2.6, h: 0.85, fill: wood },
+        { c: 1, x: 3.9, y: 2.2, d: 0.8 },
+        { x: 5.5, y: 0.35, w: 1.7, h: 2.05 },
+        { x: 5.62, y: 0.45, w: 0.62, h: 0.35 },
+        { x: 6.45, y: 0.45, w: 0.62, h: 0.35 },
+        { x: 9.0, y: 0.35, w: 0.9, h: 2.0 },
+        { x: 7.6, y: 0.1, w: 1.1, h: 0.6, fill: wood, gap: 12 },
+        { x: 0.3, y: 7.2, w: 3.5, h: 0.6, fill: ink, gap: 7 },
+        { x: 1.2, y: 5.4, w: 1.7, h: 1.0, fill: wood, gap: 14 },
+        { x: 8.35, y: 6.7, w: 0.75, h: 1.0 },
+        { e: 1, x: 9.5, y: 4.95, w: 0.45, h: 0.6 },
+      ],
+      rooms: [
+        { x: 2.3, y: 1.3, name: "Vardagsrum", area: "22 m²" },
+        { x: 6.2, y: 3.3, name: "Sovrum", area: "10,5 m²", size: 28 },
+        { x: 8.7, y: 3.3, name: "Sovrum", area: "11,5 m²", size: 28 },
+        { x: 2.0, y: 4.95, name: "Kök", area: "13,5 m²", size: 30 },
+        { x: 5.2, y: 5.6, name: "Hall", area: "12 m²", size: 28 },
+        { x: 7.3, y: 7.25, name: "Klk", area: "", size: 24 },
+        { x: 9.1, y: 6.05, name: "Bad", area: "6 m²", size: 28 },
+        { x: 2.4, y: -0.75, name: "Balkong", area: "5 m²", size: 26 },
+      ],
+      info: ["Pris 6 250 000 kr", "Avgift 4 380 kr/mån", "Byggår 1931", "Balkong · Hiss · Förråd"],
+      notes: [
+        { t: "note", x: 1000, y: 590, text: "3D med möbler,\nska gå att snurra!", to: [870, 500] },
+        { t: "note", x: 620, y: 200, text: "två sovrum – barnfamilj", to: [700, 330] },
+        { t: "note", x: 1000, y: 800, text: "kalkyl: lån + avgift\n= kostnad per månad", noArrow: true },
+      ],
+    }),
+  },
+);

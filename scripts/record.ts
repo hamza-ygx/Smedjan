@@ -18,7 +18,7 @@ const model = process.env.SMEDJAN_MODEL || "claude-opus-5-5";
 // Recordings aren't time-critical, so spend more effort than the live default.
 const effort = (process.env.RECORD_EFFORT || "medium") as "medium";
 
-async function record(id: string, title: string) {
+async function record(id: string, title: string, note?: string) {
   const file = path.join(outDir, `${id}.html`);
   if (existsSync(file) && !force) return console.log(`skip ${id} (exists, use --force)`);
   const data = readFileSync(path.join(root, "public", "sketches", `${id}.jpg`)).toString("base64");
@@ -27,7 +27,7 @@ async function record(id: string, title: string) {
     model,
     max_tokens: 32000,
     system: SYSTEM_PROMPT,
-    messages: buildMessages({ kind: "image", image: { data, mediaType: "image/jpeg" }, title }),
+    messages: buildMessages({ kind: "image", image: { data, mediaType: "image/jpeg" }, title, note }),
     thinking: { type: "adaptive" },
     output_config: { effort },
     fallbacks: "default",
@@ -44,7 +44,7 @@ async function record(id: string, title: string) {
 
 (async () => {
   const todo = SKETCHES.filter((s) => !only.length || only.includes(s.id));
-  const results = await Promise.allSettled(todo.map((s) => record(s.id, s.title)));
+  const results = await Promise.allSettled(todo.map((s) => record(s.id, s.title, s.brief)));
   const failed = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
   failed.forEach((f) => console.error("fail", f.reason instanceof Error ? f.reason.message : f.reason));
   process.exitCode = failed.length ? 1 : 0;

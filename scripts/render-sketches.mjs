@@ -123,6 +123,20 @@ function draw(def){
       case"tabs":{const n=e.items.length,w=e.w/n;rect(e.x,e.y,e.w,e.h,{});
         e.items.forEach((it,i)=>{if(i)line(e.x+i*w,e.y,e.x+i*w,e.y+e.h);if(i===e.active)rect(e.x+i*w+5,e.y+5,w-10,e.h-10,{fill:"#e8590c",hachureGap:8,stroke:"none"});
           text(e.x+i*w+w/2,e.y+e.h/2+11,it,{size:32,anchor:"middle",weight:i===e.active?700:400})});break}
+      case"wall":line(e.x1,e.y1,e.x2,e.y2,{strokeWidth:e.thin?4:8,roughness:0.9,bowing:0.6});break;
+      case"gap":add(rc.line(e.x1,e.y1,e.x2,e.y2,{stroke:"#f8f5ee",strokeWidth:e.w||14,roughness:0}));break;
+      case"door":{const r=e.r,a=e.a*Math.PI/180,s=e.s||1,b=a+s*Math.PI/2;
+        add(rc.line(e.x,e.y,e.x+Math.cos(a)*r,e.y+Math.sin(a)*r,{stroke:"#f8f5ee",strokeWidth:14,roughness:0}));
+        line(e.x,e.y,e.x+Math.cos(b)*r,e.y+Math.sin(b)*r,{strokeWidth:2.6});
+        const lo=Math.min(a,b),hi=Math.max(a,b);add(rc.arc(e.x,e.y,r*2,r*2,lo,hi,false,opt({strokeWidth:1.4,stroke:"#55607a",roughness:0.6})));break}
+      case"win":{const dx=e.x2-e.x1,dy=e.y2-e.y1,l=Math.hypot(dx,dy)||1,nx=-dy/l*5,ny=dx/l*5;
+        add(rc.line(e.x1,e.y1,e.x2,e.y2,{stroke:"#f8f5ee",strokeWidth:12,roughness:0}));
+        for(const k of[-1,0,1])line(e.x1+nx*k,e.y1+ny*k,e.x2+nx*k,e.y2+ny*k,{strokeWidth:k?2:1.2,roughness:0.5,stroke:k?INK:"#55607a"});break}
+      case"room":{text(e.x,e.y,e.name,{size:e.size||34,anchor:"middle",weight:700});if(e.area)text(e.x,e.y+(e.size||34)*0.95,e.area,{size:(e.size||34)*0.8,anchor:"middle",color:"#55607a"});break}
+      case"circle":add(rc.circle(e.x,e.y,e.d,opt({fill:e.fill,fillStyle:e.fillStyle||"hachure",hachureGap:e.gap||7,strokeWidth:e.sw||2.2})));break;
+      case"ellipse":add(rc.ellipse(e.x,e.y,e.w,e.h,opt({fill:e.fill,hachureGap:7,strokeWidth:2})));break;
+      case"compass":{add(rc.circle(e.x,e.y,64,opt({strokeWidth:1.8})));add(rc.polygon([[e.x,e.y-28],[e.x-10,e.y+8],[e.x+10,e.y+8]],opt({fill:INK,fillStyle:"solid",strokeWidth:1.5})));text(e.x,e.y-38,"N",{size:30,anchor:"middle",weight:700});break}
+      case"scale":{const step=e.px;line(e.x,e.y,e.x+step*e.n,e.y,{strokeWidth:2.4});for(let i=0;i<=e.n;i++){line(e.x+i*step,e.y-8,e.x+i*step,e.y+8,{strokeWidth:2});text(e.x+i*step,e.y+34,String(i),{size:24,anchor:"middle",color:"#55607a"})}text(e.x+step*e.n+16,e.y+34,"m",{size:24,color:"#55607a"});break}
       case"progress":rect(e.x,e.y,e.w,e.h,{});rect(e.x+4,e.y+4,(e.w-8)*e.value,e.h-8,{fill:"#e8590c",hachureGap:6,stroke:"none"});break;
     }
   }
