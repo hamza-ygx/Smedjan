@@ -1,11 +1,9 @@
-export type SketchCategory = "Ekonomi" | "Vardag" | "Spel" | "Lägenheter";
-export type SketchTab = "skisser" | "lagenheter";
+export type SketchCategory = "Lägenheter";
 
 export interface Sketch {
   id: string;
   title: string;
   category: SketchCategory;
-  tab: SketchTab;
   /** Extra instruction sent along with the image. */
   brief?: string;
   /** Short facts shown on the card. */
@@ -19,19 +17,9 @@ const APARTMENT_BRIEF = `Det här är en handritad planritning av en lägenhet t
 - Bredvid modellen: objektinformationen från skissen (område, rum, yta, pris, avgift, byggår och övrigt) och en månadskostnadskalkyl med reglage för kontantinsats (minst 15 %), ränta och amortering. Visa lån, räntekostnad, amortering, avgift och total kostnad per månad.`;
 
 export const SKETCHES: Sketch[] = [
-  { id: "faktura", title: "Fakturagenerator", category: "Ekonomi", tab: "skisser" },
-  { id: "kpi", title: "KPI-dashboard", category: "Ekonomi", tab: "skisser" },
-  { id: "utlagg", title: "Utläggsrapport", category: "Ekonomi", tab: "skisser" },
-  { id: "moms", title: "Momskalkylator", category: "Ekonomi", tab: "skisser" },
-  { id: "kafe", title: "Kafé Bönan", category: "Vardag", tab: "skisser" },
-  { id: "bokning", title: "Boka möte", category: "Vardag", tab: "skisser" },
-  { id: "todo", title: "Att göra", category: "Vardag", tab: "skisser" },
-  { id: "luffarschack", title: "Luffarschack", category: "Spel", tab: "skisser" },
-  { id: "memory", title: "Memory", category: "Spel", tab: "skisser" },
-  { id: "quiz", title: "Ekonomiquiz", category: "Spel", tab: "skisser" },
-  { id: "lgh-etta", title: "Etta · Vasastan", category: "Lägenheter", tab: "lagenheter", subtitle: "1 rok · 34 m² · 2 950 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-tvaa", title: "Tvåa · Södermalm", category: "Lägenheter", tab: "lagenheter", subtitle: "2 rok · 56 m² · 4 450 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-trea", title: "Trea · Kungsholmen", category: "Lägenheter", tab: "lagenheter", subtitle: "3 rok · 78 m² · 6 250 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-etta", title: "Etta · Vasastan", category: "Lägenheter", subtitle: "1 rok · 34 m² · 2 950 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-tvaa", title: "Tvåa · Södermalm", category: "Lägenheter", subtitle: "2 rok · 56 m² · 4 450 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-trea", title: "Trea · Kungsholmen", category: "Lägenheter", subtitle: "3 rok · 78 m² · 6 250 000 kr", brief: APARTMENT_BRIEF },
 ];
 
 export const sketchImage = (id: string) => `/sketches/${id}.jpg`;

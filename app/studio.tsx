@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PROMPT_IDEAS, SKETCHES, sketchImage, sketchReplay, type Sketch, type SketchTab } from "@/lib/sketches";
+import { PROMPT_IDEAS, SKETCHES, sketchImage, sketchReplay, type Sketch } from "@/lib/sketches";
 import { Sparks } from "./sparks";
 import * as I from "./icons";
 
@@ -17,8 +17,11 @@ type Version = { html: string; label: string; slug: string };
 type Payload = Record<string, unknown>;
 type Settings = { mode: Mode; speed: number; code: boolean };
 
-const DEFAULT_SETTINGS: Settings = { mode: "auto", speed: 1100, code: false };
-const SETTINGS_KEY = "smedjan.settings";
+const DEFAULT_SETTINGS: Settings = { mode: "auto", speed: 3200, code: false };
+// Bumped when defaults change so presenter browsers pick up the new ones.
+const SETTINGS_KEY = "smedjan.settings.v2";
+// <head>/CSS is invisible on stage, so replays push it through this much faster.
+const HEAD_SPEEDUP = 8;
 const FIRST_EVENT_MS = 8_000; // API never answered → fall back
 const FIRST_HTML_MS = 40_000; // API answered but no output yet → fall back
 const STALL_MS = 20_000; // output stopped mid-stream → fall back
@@ -79,8 +82,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const [edit, setEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
-  const [tab, setTab] = useState<SketchTab>("skisser");
-  const visible = useMemo(() => SKETCHES.filter((s) => s.tab === tab), [tab]);
+  const visible = SKETCHES;
   const [dragging, setDragging] = useState(false);
   const [replays, setReplays] = useState<Record<string, string | null>>({});
 
@@ -243,11 +245,13 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const replay = useCallback(
     async (html: string, alive: () => boolean) => {
       setVia("replay");
-      await new Promise((r) => setTimeout(r, 1400 + Math.random() * 900));
+      await new Promise((r) => setTimeout(r, 500 + Math.random() * 400));
+      const bodyAt = html.search(/<body[\s>]/i);
       let i = 0;
       while (i < html.length) {
         if (!alive()) throw new Stopped();
-        const per = (settingsRef.current.speed * 0.03) * (0.6 + Math.random() * 0.8);
+        const boost = bodyAt > 0 && i < bodyAt ? HEAD_SPEEDUP : 1;
+        const per = settingsRef.current.speed * 0.03 * boost * (0.6 + Math.random() * 0.8);
         let end = Math.min(html.length, i + Math.max(4, Math.round(per)));
         // Pause briefly on line ends now and then, like a real stream.
         const nl = html.indexOf("\n", i);
@@ -521,8 +525,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       if (k >= 0 && visible[k] && !busy) {
         e.preventDefault();
         forgeSketch(visible[k]);
-      } else if (e.key === "l") setTab((t) => (t === "skisser" ? "lagenheter" : "skisser"));
-      else if (e.key === "p") setPresenting((v) => !v);
+      } else if (e.key === "p") setPresenting((v) => !v);
       else if (e.key === "f") {
         if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
         else {
@@ -597,9 +600,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         ? "Funderar på ändringen…"
         : source?.kind === "text"
           ? "Tolkar idén…"
-          : source?.kind === "sketch" && source.sketch.tab === "lagenheter"
-            ? "Läser planritningen…"
-            : "Läser skissen…",
+          : "Läser planritningen…",
     building: "Smider…",
     done: "Klar",
     error: "Något gick fel",
@@ -615,7 +616,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         <div className="brand">
           <I.Anvil />
           Smedjan
-          <small>från skiss till app</small>
+          <small>från ritning till lägenhet</small>
         </div>
         <div className="spacer" />
         <div className="status" aria-live="polite">
@@ -655,7 +656,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
           <div className="popover" role="dialog" aria-label="Inställningar">
             {!liveAvailable && (
               <p className="note">
-                Ingen API-nyckel på servern: skisserna spelas upp från förinspelade byggen. Lägg till <code>ANTHROPIC_API_KEY</code> och{" "}
+                Ingen API-nyckel på servern: lägenheterna spelas upp från förinspelade byggen. Lägg till <code>ANTHROPIC_API_KEY</code> och{" "}
                 <code>APP_PASSCODE</code> i Vercel för live-byggen, fritext och ändringar.
               </p>
             )}
@@ -677,12 +678,12 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
                 ? "Bygger live. Om AI:n inte svarar eller nätet strular spelas en förinspelad version upp automatiskt."
                 : settings.mode === "live"
                   ? "Alltid live, ingen reserv."
-                  : "Spelar upp förinspelade byggen för skisserna. Fritext och ändringar går fortfarande live."}
+                  : "Spelar upp förinspelade byggen för lägenheterna. Fritext och ändringar går fortfarande live."}
             </p>
             )}
             <div>
               <label>Repris-hastighet · {settings.speed} tecken/s</label>
-              <input type="range" min={300} max={4000} step={100} value={settings.speed} onChange={(e) => setSettings((s) => ({ ...s, speed: Number(e.target.value) }))} />
+              <input type="range" min={300} max={8000} step={100} value={settings.speed} onChange={(e) => setSettings((s) => ({ ...s, speed: Number(e.target.value) }))} />
             </div>
             <div className="row">
               <span>Visa koden medan den skrivs</span>
@@ -696,22 +697,10 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       </header>
 
       <aside className="sidebar">
-        <div className="seg tabs" role="tablist">
-          {(
-            [
-              ["skisser", "Skisser"],
-              ["lagenheter", "Lägenheter"],
-            ] as [SketchTab, string][]
-          ).map(([id, label]) => (
-            <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "on" : ""} onClick={() => setTab(id)} title="Byt flik (L)">
-              {label}
-            </button>
-          ))}
-        </div>
         {grouped.map(([cat, items]) => (
           <section key={cat}>
             <h3>{cat}</h3>
-            <div className={`sketch-grid${tab === "lagenheter" ? " wide" : ""}`}>
+            <div className="sketch-grid wide">
               {items.map(({ sketch, key }) => (
                 <button
                   key={sketch.id}
@@ -792,18 +781,17 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
               <div className="hero">
                 <I.Anvil />
                 <h1>
-                  Visa en skiss.
+                  Välj en lägenhet.
                   <br />
-                  <em>Se den smidas.</em>
+                  <em>Se den byggas.</em>
                 </h1>
                 <p>
                   {liveAvailable
-                    ? "Välj en handritad skiss eller beskriv en idé, så byggs en fungerande app framför dina ögon."
-                    : "Välj en handritad skiss, så byggs en fungerande app framför dina ögon."}
+                    ? "Klicka på en handritad planritning, så byggs lägenheten i 3D framför dina ögon. Du kan också beskriva en egen idé."
+                    : "Klicka på en handritad planritning, så byggs lägenheten i 3D framför dina ögon."}
                 </p>
                 <div className="keys">
-                  <span><kbd>1</kbd>–<kbd>0</kbd>skisser</span>
-                  <span><kbd>L</kbd>lägenheter</span>
+                  <span><kbd>1</kbd>–<kbd>3</kbd>lägenheter</span>
                   <span><kbd>F</kbd>helskärm</span>
                   <span><kbd>C</kbd>kod</span>
                   {liveAvailable && <span><kbd>E</kbd>ändra</span>}

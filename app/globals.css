@@ -386,8 +386,6 @@ button { cursor: pointer; }
   12%, 80% { opacity: 1; transform: translate(-50%, 0) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -6px) scale(0.98); }
 }
-.sidebar .tabs { flex: none; }
-.sidebar .tabs button { padding: 7px 0; font-size: 13.5px; font-weight: 600; }
 .sketch-grid.wide { grid-template-columns: 1fr; gap: 10px; }
 .sketch-grid.wide .sketch img { aspect-ratio: 1.75; object-position: center; }
 .sketch-grid.wide .sketch .label { font-size: 14px; font-weight: 600; padding: 8px 10px 2px; }
