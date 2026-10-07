@@ -14,7 +14,7 @@ Replays push the invisible `<head>`/CSS through 8× faster and stream the visibl
 
 ## Without an API key
 
-Smedjan runs fine with no `ANTHROPIC_API_KEY`: it locks to the cached replays, so all 6 homes still build in front of the audience. Free text, image drop and edits are hidden, and the settings panel says why. The API route refuses live calls, so nothing can spend credit. Add `ANTHROPIC_API_KEY` **and** `APP_PASSCODE` in Vercel and redeploy to switch live mode on. The passcode gate also turns on then.
+Smedjan runs fine with no `ANTHROPIC_API_KEY`: it locks to the cached replays, so all 6 homes still build in front of the audience. Free text, image drop/paste and edits are quietly switched off (no messages on screen). The API route refuses live calls, so nothing can spend credit. Add `ANTHROPIC_API_KEY` **and** `APP_PASSCODE` in Vercel and redeploy to switch live mode on. The passcode gate also turns on then.
 
 ## Run locally
 

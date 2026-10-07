@@ -27,7 +27,6 @@ const SCAN_MS = 3400;
 const FIRST_EVENT_MS = 8_000; // API never answered → fall back
 const FIRST_HTML_MS = 40_000; // API answered but no output yet → fall back
 const STALL_MS = 20_000; // output stopped mid-stream → fall back
-const NO_KEY = "Live-byggen kräver en API-nyckel på servern";
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 
 class Stopped extends Error {}
@@ -375,10 +374,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         }, SCAN_MS / 2);
       }
 
-      if (!liveAvailable && !fallback) {
-        setToast(NO_KEY);
-        return;
-      }
+      if (!liveAvailable && !fallback) return;
 
       try {
         if (mode === "replay" && fallback) {
@@ -395,6 +391,9 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             await replay(fallback, alive);
           }
         }
+        // Never cut the scanner sweep short, even if a build arrives very fast.
+        const left = scanUntilRef.current - performance.now();
+        if (left > 0) await new Promise((r) => setTimeout(r, left));
         if (!alive()) return;
         post({ type: "end" });
         const secs = (performance.now() - t0Ref.current) / 1000;
@@ -454,14 +453,14 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             note: sketch.brief,
           };
         },
-        { replayHtml: replaysRef.current[sketch.id], label: sketch.title, slug: sketch.id },
+        { replayHtml: replaysRef.current[sketch.id], label: sketch.title, slug: slugify(sketch.title) },
       ),
     [forge],
   );
 
   const forgeUpload = useCallback(
     async (file: File) => {
-      if (!liveAvailable) return setToast(NO_KEY);
+      if (!liveAvailable) return;
       if (!file.type.startsWith("image/")) return setToast("Det där är ingen bild");
       let url: string;
       try {
@@ -560,10 +559,11 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       else if (e.key === "e") {
         e.preventDefault();
         document.getElementById("edit-input")?.focus();
-      } else if (e.key === "ArrowLeft") showVersion(vIdxRef.current - 1);
-      else if (e.key === "ArrowRight") showVersion(vIdxRef.current + 1);
+      } else if (liveAvailable && e.key === "ArrowLeft") showVersion(vIdxRef.current - 1);
+      else if (liveAvailable && e.key === "ArrowRight") showVersion(vIdxRef.current + 1);
     };
     const onPaste = (e: ClipboardEvent) => {
+      if (!liveAvailable) return;
       const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
       if (file && !busy) {
         e.preventDefault();
@@ -571,7 +571,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       }
     };
     let depth = 0;
-    const hasFile = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const hasFile = (e: DragEvent) => liveAvailable && Array.from(e.dataTransfer?.types ?? []).includes("Files");
     const onEnter = (e: DragEvent) => {
       if (!hasFile(e)) return;
       depth++;
@@ -604,7 +604,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       window.removeEventListener("dragover", onOver);
       window.removeEventListener("drop", onDrop);
     };
-  }, [busy, stop, forgeSketch, forgeUpload, showVersion, visible]);
+  }, [busy, stop, forgeSketch, forgeUpload, showVersion, visible, liveAvailable]);
 
   // ---------- render ----------
   const grouped = useMemo(() => {
@@ -628,7 +628,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
     done: "Klar",
     error: "Något gick fel",
   };
-  const slug = busy ? (source?.kind === "sketch" ? source.sketch.id : current?.slug ?? "ny-app") : current?.slug;
+  const slug = busy ? (source?.kind === "sketch" ? slugify(source.sketch.title) : current?.slug ?? "ny-app") : current?.slug;
   const sourceImage = source?.kind === "sketch" ? sketchImage(source.sketch.id) : source?.kind === "upload" ? source.url : null;
   const sourceText = source?.kind === "text" || source?.kind === "edit" ? source.prompt : null;
   const activeSketch = source?.kind === "sketch" ? source.sketch.id : null;
@@ -677,12 +677,6 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         )}
         {showSettings && (
           <div className="popover" role="dialog" aria-label="Inställningar">
-            {!liveAvailable && (
-              <p className="note">
-                Ingen API-nyckel på servern: lägenheterna spelas upp från förinspelade byggen. Lägg till <code>ANTHROPIC_API_KEY</code> och{" "}
-                <code>APP_PASSCODE</code> i Vercel för live-byggen, fritext och ändringar.
-              </p>
-            )}
             {liveAvailable && (
             <div>
               <label>Byggläge</label>
@@ -701,20 +695,19 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
                 ? "Bygger live. Om AI:n inte svarar eller nätet strular spelas en förinspelad version upp automatiskt."
                 : settings.mode === "live"
                   ? "Alltid live, ingen reserv."
-                  : "Spelar upp förinspelade byggen för lägenheterna. Fritext och ändringar går fortfarande live."}
+                  : "Spelar upp förinspelade byggen för bostäderna. Fritext och ändringar går fortfarande live."}
             </p>
             )}
             <div>
-              <label>Repris-hastighet · {settings.speed} tecken/s</label>
+              <label>
+                {liveAvailable ? "Repris-hastighet" : "Bygghastighet"} · {settings.speed.toLocaleString("sv-SE")} tecken/s
+              </label>
               <input type="range" min={300} max={12000} step={100} value={settings.speed} onChange={(e) => setSettings((s) => ({ ...s, speed: Number(e.target.value) }))} />
             </div>
             <div className="row">
               <span>Visa koden medan den skrivs</span>
               <button className={`toggle${settings.code ? " on" : ""}`} onClick={() => setSettings((s) => ({ ...s, code: !s.code }))} aria-label="Visa kod" />
             </div>
-            <p className="note">
-              Förinspelade: {Object.values(replays).filter(Boolean).length} / {SKETCHES.length}
-            </p>
           </div>
         )}
       </header>
@@ -873,7 +866,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
           </div>
         </div>
 
-        {(liveAvailable || versions.length > 1) && (
+        {liveAvailable && (
         <div className="dock">
           {liveAvailable && (
           <div className={`edit${!current || busy ? " disabled" : ""}`}>
@@ -891,7 +884,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             </button>
           </div>
           )}
-          {versions.length > 1 && (
+          {liveAvailable && versions.length > 1 && (
             <div className="versions">
               <button className="icon-btn" onClick={() => showVersion(vIdx - 1)} disabled={busy || vIdx <= 0} title="Föregående version (←)">
                 <I.Left />

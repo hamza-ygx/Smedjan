@@ -1,4 +1,4 @@
-export type SketchCategory = "Lägenheter";
+export type SketchCategory = "Bostäder";
 
 export interface Sketch {
   id: string;
@@ -36,12 +36,12 @@ Layout och interaktion
 - Panelen visar objektinformationen från skissen och en månadskostnadskalkyl med reglage för kontantinsats (minst 15 %), ränta och amortering. Kalkylen visar lån, räntekostnad, amortering, avgift eller driftkostnad och total kostnad per månad.`;
 
 export const SKETCHES: Sketch[] = [
-  { id: "lgh-etta", title: "Etta · Vasastan", category: "Lägenheter", subtitle: "1 rok · 34 m²\n2 950 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-tvaa", title: "Tvåa · Södermalm", category: "Lägenheter", subtitle: "2 rok · 56 m²\n4 450 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-trea", title: "Trea · Kungsholmen", category: "Lägenheter", subtitle: "3 rok · 78 m²\n6 250 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-villa", title: "Villa · Djursholm", category: "Lägenheter", subtitle: "Pool & altan\n14 750 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-takvaning", title: "Takvåning · Östermalm", category: "Lägenheter", subtitle: "Jacuzzi på taket\n18 900 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-sjostuga", title: "Sjöstuga · Värmdö", category: "Lägenheter", subtitle: "Bastu & brygga\n6 900 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-etta", title: "Etta · Vasastan", category: "Bostäder", subtitle: "1 rok · 34 m²\n2 950 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-tvaa", title: "Tvåa · Södermalm", category: "Bostäder", subtitle: "2 rok · 56 m²\n4 450 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-trea", title: "Trea · Kungsholmen", category: "Bostäder", subtitle: "3 rok · 78 m²\n6 250 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-villa", title: "Villa · Djursholm", category: "Bostäder", subtitle: "Pool & altan\n14 750 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-takvaning", title: "Takvåning · Östermalm", category: "Bostäder", subtitle: "Jacuzzi på taket\n18 900 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-sjostuga", title: "Sjöstuga · Värmdö", category: "Bostäder", subtitle: "Bastu & brygga\n6 900 000 kr", brief: APARTMENT_BRIEF },
 ];
 
 export const sketchImage = (id: string) => `/sketches/${id}.jpg`;

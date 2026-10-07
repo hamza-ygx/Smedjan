@@ -8,7 +8,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "Smedjan",
-  description: "Från skiss till fungerande app – live.",
+  description: "Från handritad planritning till bostad i 3D – live.",
   robots: { index: false, follow: false },
 };
 
