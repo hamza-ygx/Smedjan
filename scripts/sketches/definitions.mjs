@@ -308,7 +308,7 @@ function apartment(a) {
   els.push({ t: "text", x: 72, y: 150, text: a.subtitle, size: 34 });
   a.info.forEach((line, i) => els.push({ t: "text", x: 1010, y: 300 + i * 54, text: line, size: i ? 34 : 38, bold: i === 0 }));
   els.push({ t: "line", x1: 1000, y1: 250, x2: 1360, y2: 250, light: true });
-  els.push({ t: "compass", x: 1290, y: 120 });
+  els.push({ t: "compass", x: 1290, y: 130, rot: a.compassRot || 0 });
   return [...els, ...a.notes];
 }
 
@@ -352,7 +352,7 @@ sketches.push(
   {
     id: "lgh-tvaa",
     els: apartment({
-      S: 82, ox: 120, oy: 300, scaleY: 945,
+      S: 82, ox: 120, oy: 300, scaleY: 945, compassRot: 180,
       title: "Tvåa · Södermalm",
       subtitle: "2 rok · 56 m² · balkong i söderläge",
       walls: [[0, 0, 8, 0], [8, 0, 8, 7], [8, 7, 0, 7], [0, 7, 0, 0], [4.8, 0, 4.8, 4.2, 1], [0, 4.2, 8, 4.2, 1], [3.4, 4.2, 3.4, 7, 1], [5.8, 4.2, 5.8, 7, 1]],

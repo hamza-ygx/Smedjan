@@ -135,7 +135,9 @@ function draw(def){
       case"room":{text(e.x,e.y,e.name,{size:e.size||34,anchor:"middle",weight:700});if(e.area)text(e.x,e.y+(e.size||34)*0.95,e.area,{size:(e.size||34)*0.8,anchor:"middle",color:"#55607a"});break}
       case"circle":add(rc.circle(e.x,e.y,e.d,opt({fill:e.fill,fillStyle:e.fillStyle||"hachure",hachureGap:e.gap||7,strokeWidth:e.sw||2.2})));break;
       case"ellipse":add(rc.ellipse(e.x,e.y,e.w,e.h,opt({fill:e.fill,hachureGap:7,strokeWidth:2})));break;
-      case"compass":{add(rc.circle(e.x,e.y,64,opt({strokeWidth:1.8})));add(rc.polygon([[e.x,e.y-28],[e.x-10,e.y+8],[e.x+10,e.y+8]],opt({fill:INK,fillStyle:"solid",strokeWidth:1.5})));text(e.x,e.y-38,"N",{size:30,anchor:"middle",weight:700});break}
+      case"compass":{const r=(e.rot||0)*Math.PI/180,P=(dx,dy)=>[e.x+dx*Math.cos(r)-dy*Math.sin(r),e.y+dx*Math.sin(r)+dy*Math.cos(r)];
+        add(rc.circle(e.x,e.y,64,opt({strokeWidth:1.8})));add(rc.polygon([P(0,-28),P(-10,8),P(10,8)],opt({fill:INK,fillStyle:"solid",strokeWidth:1.5})));
+        const [nx,ny]=P(0,-46);text(nx,ny+10,"N",{size:30,anchor:"middle",weight:700,rot:0});break}
       case"scale":{const step=e.px;line(e.x,e.y,e.x+step*e.n,e.y,{strokeWidth:2.4});for(let i=0;i<=e.n;i++){line(e.x+i*step,e.y-8,e.x+i*step,e.y+8,{strokeWidth:2});text(e.x+i*step,e.y+34,String(i),{size:24,anchor:"middle",color:"#55607a"})}text(e.x+step*e.n+16,e.y+34,"m",{size:24,color:"#55607a"});break}
       case"progress":rect(e.x,e.y,e.w,e.h,{});rect(e.x+4,e.y+4,(e.w-8)*e.value,e.h-8,{fill:"#e8590c",hachureGap:6,stroke:"none"});break;
     }
