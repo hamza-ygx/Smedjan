@@ -10,7 +10,7 @@ Live stage demo: pick a hand-drawn sketch (or type an idea) and a working app is
 
 ## Speed
 
-Replays push the invisible `<head>`/CSS through 8× faster and stream the visible page at 3 200 chars/s (adjustable in settings), so an apartment builds in about 6–8 s. Live builds depend on the model; set `SMEDJAN_FAST=1` for fast mode (≈2.5× faster output, premium price).
+Replays push the invisible `<head>`/CSS through 8× faster and stream the visible page at 5 500 chars/s (adjustable in settings). After the ~3.5 s scanner sweep, a home builds in about 8–10 s in total. Live builds depend on the model; set `SMEDJAN_FAST=1` for fast mode (≈2.5× faster output, premium price).
 
 ## Without an API key
 
@@ -73,7 +73,7 @@ Settings (gear icon): build mode *Auto* / *Bara live* / *Repris*, replay speed, 
 - [ ] Log in on the presentation laptop the day before. The session lasts 14 days.
 - [ ] Load the page once on venue Wi-Fi so sketches and replays are cached in memory. After that, Auto mode survives a dead network for all 6 homes. Free text and edits always need the network.
 - [ ] Browser zoom so the stage fills the projector; press `P`.
-- [ ] Rehearse all six homes. Replays take ~6–8 s; live builds 30–60 s depending on effort and app size.
+- [ ] Rehearse all six homes. Replays take ~8–10 s including the scan; live builds 30–60 s depending on effort and app size.
 - [ ] Backup: `npm run dev` on the laptop with a phone hotspot.
 
 ## How it works

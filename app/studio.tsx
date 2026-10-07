@@ -17,9 +17,9 @@ type Version = { html: string; label: string; slug: string };
 type Payload = Record<string, unknown>;
 type Settings = { mode: Mode; speed: number; code: boolean };
 
-const DEFAULT_SETTINGS: Settings = { mode: "auto", speed: 3200, code: false };
+const DEFAULT_SETTINGS: Settings = { mode: "auto", speed: 5500, code: false };
 // Bumped when defaults change so presenter browsers pick up the new ones.
-const SETTINGS_KEY = "smedjan.settings.v2";
+const SETTINGS_KEY = "smedjan.settings.v3";
 // <head>/CSS is invisible on stage, so replays push it through this much faster.
 const HEAD_SPEEDUP = 8;
 // One full scanner sweep over the drawing (down, then back up) before the build is revealed.
@@ -706,7 +706,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             )}
             <div>
               <label>Repris-hastighet · {settings.speed} tecken/s</label>
-              <input type="range" min={300} max={8000} step={100} value={settings.speed} onChange={(e) => setSettings((s) => ({ ...s, speed: Number(e.target.value) }))} />
+              <input type="range" min={300} max={12000} step={100} value={settings.speed} onChange={(e) => setSettings((s) => ({ ...s, speed: Number(e.target.value) }))} />
             </div>
             <div className="row">
               <span>Visa koden medan den skrivs</span>
