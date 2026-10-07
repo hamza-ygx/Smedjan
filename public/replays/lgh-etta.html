@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Etta · Vasastan – 3D-planritning</title>
+<style>
+@property --h{syntax:'<length>';inherits:true;initial-value:0px}
+:root{--ink:#18223d;--ink2:#4a5572;--mute:#8a93a8;--line:#e6e9f0;--acc:#e8590c;--accs:#fff1e8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:radial-gradient(1000px 420px at 15% -10%,#fff,#f1f3f7 60%) #f1f3f7;min-height:100vh;padding:14px 22px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+h1{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.15;display:inline-block;padding-bottom:4px;background:linear-gradient(var(--acc),var(--acc)) 0 100%/100% 3px no-repeat}
+.sub{color:var(--ink2);font-size:13.5px;margin-top:2px}
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:650;padding:6px 12px;margin-left:6px;border-radius:99px;background:#fff;border:1px solid var(--line)}
+.pill i{width:7px;height:7px;border-radius:50%;background:#1f9d55;box-shadow:0 0 0 3px #e3f4ea}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:14px;height:calc(100vh - 96px);min-height:590px}
+.card{background:#fff;border-radius:16px;border:1px solid #edf0f5;box-shadow:0 1px 2px #18223d0d,0 10px 28px -16px #18223d38}
+.stage{position:relative;overflow:hidden;background:radial-gradient(#d6dae3 1px,#0000 1.3px) 0 0/22px 22px,radial-gradient(ellipse at 50% 55%,#fff,#f3f4f7 75%)}
+.scene{position:absolute;inset:0;perspective:1700px;perspective-origin:50% 30%;cursor:grab;touch-action:none;user-select:none}
+.scene:active{cursor:grabbing}
+.world{--wh:182px;--rx:55deg;--rz:-30deg;--z:1.05;--ty:26px;position:absolute;left:50%;top:50%;width:504px;height:364px;margin:-182px 0 0 -252px;transform-style:preserve-3d;transform:translateY(var(--ty)) rotateX(var(--rx)) rotateZ(var(--rz)) scale(var(--z));transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.live{transition:none}
+.bx{position:absolute;transform-style:preserve-3d;transform:translateZ(var(--h));background:var(--t,var(--c));pointer-events:none;animation:up .8s cubic-bezier(.2,.8,.25,1);transition:--h .55s}
+@keyframes up{from{--h:0px}}
+.bx:before,.bx:after,.bx>b{content:"";position:absolute;left:0;top:0;width:100%;height:var(--fh,var(--h));transform-origin:0 0;transform:rotateX(-90deg);background:var(--c);box-shadow:inset 0 0 0 999px rgba(24,34,61,var(--s,.13))}
+.bx:after{top:100%;--s:.02}
+.bx>b{width:var(--fh,var(--h));height:100%;transform:rotateY(90deg);--s:.09}
+.bx>b+b{left:100%;--s:.05}
+.slab{--h:0px;--fh:18px;--c:#d9d3c8;--t:#fbfaf7;animation:none;box-shadow:0 30px 60px -18px #18223d66}
+.dm{position:absolute;font-size:11px;font-weight:700;color:var(--mute);white-space:nowrap;left:50%;top:-24px;transform:translateX(-50%)}
+.dm+.dm{left:-30px;top:50%;transform:translate(-50%,-50%) rotate(-90deg)}
+.rm{position:absolute;transform:translateZ(1px);cursor:pointer;background:repeating-linear-gradient(90deg,#0000 0 69px,#78502817 69px 70px),repeating-linear-gradient(#ecdcc2 0 13px,#e3cfb0 13px 14px)}
+.rm:after{content:"";position:absolute;inset:0;background:var(--acc);opacity:0;transition:opacity .25s}
+.rm:hover:after{opacity:.08}.rm.on:after{opacity:.22}
+.tl{background:linear-gradient(90deg,#d3dae2 1px,#0000 0) 0 0/14px 14px,linear-gradient(#d3dae2 1px,#0000 0) 0 0/14px 14px,#eef2f6}
+.lb{position:absolute;transform:translate(-50%,-50%);text-align:center;font-size:12.5px;font-weight:750;line-height:1.15;white-space:nowrap;padding:3px 8px;border-radius:7px;background:#ffffffd9;box-shadow:0 1px 3px #18223d1f;z-index:1}
+.lb small{display:block;font-size:10.5px;font-weight:600;color:var(--ink2)}
+.on .lb{color:var(--acc)}
+.sw{position:absolute;width:56px;height:56px;transform:translateZ(2px);border:0 dashed #18223d66;pointer-events:none}
+.w{--h:var(--wh);--c:#f5f1ea;--t:var(--ink)}
+.win:before,.win:after{background:linear-gradient(90deg,#0000 calc(50% - 1.5px),#fff 0 calc(50% + 1.5px),#0000 0),linear-gradient(var(--c) 16%,#fff 0 17.5%,#96c4e48c 0 64%,#fff 0 66%,var(--c) 0)}
+.fb>b{background:linear-gradient(90deg,#0000 60%,#2b3245 0 62%,#0000 0),linear-gradient(#0000 calc(50% - 1px),#fff 0 calc(50% + 1px),#0000 0),linear-gradient(90deg,var(--c) 9%,#96c4e48c 0 99%,var(--c) 0)}
+.ln{--fh:35px}.w.cut{--h:26px}.ln.cut{visibility:hidden}
+.w.cut:before,.w.cut:after,.w.cut>b{background:var(--c)}
+.kk{--c:#f8f6f2;--t:radial-gradient(circle at 50% 18%,#2b3245 6px,#6b7385 0 7.5px,#0000 8px),radial-gradient(circle at 50% 33%,#2b3245 6px,#6b7385 0 7.5px,#0000 8px),linear-gradient(#aeb8c4,#c7d0da) 50% 70%/24px 32px no-repeat,#e4e1db}
+.tb{--c:#9a7655;--t:radial-gradient(circle at 40% 35%,#c9a47e,#a98461);border-radius:50%}
+.tb:before,.tb:after{left:calc(50% - 5px);top:50%;width:10px;transform-origin:50% 0}
+.tb:after{transform:rotate(90deg) rotateX(-90deg)}
+.so{--c:#e8590c;--t:linear-gradient(90deg,#0000 33%,#0002 0 33.6%,#0000 0 66.4%,#0002 0 67%,#0000 0) #f06f27}
+.bed{--c:#cfd5df;--t:linear-gradient(#fff,#fff) 10% 7%/38% 17% no-repeat,linear-gradient(#fff,#fff) 90% 7%/38% 17% no-repeat,linear-gradient(#f4f6fa 30%,#a9b8d4 0)}
+.hb{--c:#7a6250}
+.tub{--c:#fbfcfd;border-radius:6px;box-shadow:inset 0 0 0 5px #fff,inset 0 0 0 99px #dbe8f2}
+.wc{--c:#fbfcfd;--t:radial-gradient(ellipse at 50% 60%,#dbe6ef 40%,#fff 42%);border-radius:40% 40% 45% 45%}
+.ov{position:absolute;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none}
+.ov>*{pointer-events:auto}
+.top{top:14px}.bot{bottom:14px;align-items:flex-end}
+.gl{background:#ffffffe6;backdrop-filter:blur(8px);border:1px solid #e8ebf1;border-radius:12px;box-shadow:0 4px 16px -6px #18223d2e}
+.ri{padding:9px 14px;min-width:200px}
+.ey{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+.ri b{display:block;font-size:17px;font-weight:800}
+.ri span{font-size:12.5px;color:var(--ink2)}
+.ctl{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;padding:5px}
+.seg{display:flex;background:#eef0f4;border-radius:9px;padding:3px}
+.seg button{padding:5px 13px;border-radius:7px;font-weight:700;font-size:12.5px;color:var(--ink2);transition:.2s}
+.seg .on{background:#fff;color:var(--ink);box-shadow:0 1px 3px #18223d26}
+.ctl>button{height:32px;min-width:32px;padding:0 10px;border-radius:9px;font-weight:700;font-size:12.5px;color:var(--ink2);display:flex;gap:7px;align-items:center;justify-content:center;transition:.15s}
+.ctl>button:hover{background:#f1f3f7;color:var(--ink)}
+.ctl>.ib{font-size:17px;padding:0}
+.tg i{width:24px;height:14px;border-radius:9px;background:#d5d9e2;position:relative;transition:.2s}
+.tg i:after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:#fff;transition:.2s}
+.tg.on i{background:var(--acc)}.tg.on i:after{transform:translateX(10px)}
+.sep{width:1px;background:var(--line);margin:4px 2px}
+.lg{display:flex;flex-wrap:wrap;gap:4px;padding:5px}
+.lg button{padding:6px 11px;border-radius:8px;font-size:12.5px;font-weight:650;display:flex;align-items:center;gap:7px;transition:.15s}
+.lg button:hover{background:#f1f3f7}.lg .on{background:var(--accs);color:var(--acc)}
+.lg i{width:9px;height:9px;border-radius:3px;background:#e3cfb0}.lg .t i{background:#c9d3de}
+.lg small{color:var(--mute)}
+.cp{width:46px;height:46px;display:grid;place-items:center;border-radius:50%}
+.cp svg{width:34px;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+aside{display:flex;flex-direction:column;gap:12px;min-height:0}
+.info,.calc{padding:14px 18px}
+.pr{display:flex;align-items:baseline;justify-content:space-between;margin:2px 0 9px}
+.pr b{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.pr span{font-size:12.5px;color:var(--mute);font-weight:600}
+dl{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+dl div{background:#f6f7fa;border-radius:10px;padding:6px 10px}
+dt{font-size:11px;color:var(--mute);font-weight:650}
+dd{font-size:13px;font-weight:700;white-space:nowrap}
+.calc{flex:1;display:flex;flex-direction:column;gap:8px}
+.ch,.sl div,.loan,.tot{display:flex;justify-content:space-between;align-items:center}
+h2{font-size:16px;font-weight:800}
+.tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--accs);color:var(--acc)}
+.sl div{font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:4px}
+.sl b,.loan b{color:var(--ink)}
+.sl small{display:block;font-size:11.5px;color:var(--mute);margin-top:2px}
+.sl .warn{color:#c2410c}
+input{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:9px;outline:0;cursor:pointer;background:linear-gradient(var(--acc),var(--acc)) 0/var(--p) 100% no-repeat,#e6e9f0}
+input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--acc);box-shadow:0 2px 6px #e8590c4d}
+input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--acc)}
+.loan{border-top:1px solid var(--line);padding-top:8px;font-size:13px;color:var(--ink2);font-weight:600}
+.loan b{font-size:15px}
+.bar{display:flex;height:8px;border-radius:9px;overflow:hidden;gap:2px}
+.bar i{transition:width .35s}
+.c1{background:var(--acc)}.c2{background:var(--ink)}.c3{background:#a3acbf}
+ul{list-style:none;display:grid;gap:3px}
+li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+li i{width:8px;height:8px;border-radius:3px}
+li b{margin-left:auto;color:var(--ink)}
+.tot{background:var(--ink);color:#fff;border-radius:12px;padding:9px 14px;margin-top:auto}
+.tot span{font-size:13px;font-weight:600}.tot small{display:block;font-size:11.5px;opacity:.65;font-weight:500}
+.tot b{font-size:23px;font-weight:800}
+b,dd{font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:1000px){.grid{grid-template-columns:1fr;height:auto}.stage{height:540px}.pill{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Etta · Vasastan</h1><p class="sub">1 rok · 34 m² · 3 tr · hiss · Bostadsrätt i Stockholm</p></div>
+  <div><span class="pill"><i></i>Till salu</span><span class="pill">Byggår 1912</span></div>
+</header>
+<main class="grid">
+<section class="card stage">
+  <div class="scene" id="scene">
+    <div class="world" id="world">
+      <div class="bx slab" style="left:-16px;top:-16px;width:536px;height:396px"><b></b><b></b><span class="dm">7,0 m</span><span class="dm">5,0 m</span></div>
+      <div class="rm" style="left:14px;top:14px;width:476px;height:219px"><span class="lb" style="left:244px;top:70px">Rum &amp; kök<small>22 m²</small></span></div>
+      <div class="rm tl" style="left:14px;top:233px;width:160px;height:117px"><span class="lb" style="left:108px;top:36px">Bad<small>4 m²</small></span></div>
+      <div class="rm" style="left:174px;top:233px;width:197px;height:117px"><span class="lb" style="left:116px;top:52px">Hall<small>5 m²</small></span></div>
+      <div class="rm" style="left:371px;top:233px;width:119px;height:117px"><span class="lb" style="left:68px;top:70px">Klk<small>3 m²</small></span></div>
+      <i class="sw" style="left:253px;top:287px;width:63px;height:63px;border-width:1.5px 1.5px 0 0;border-radius:0 100% 0 0;box-shadow:inset 2px 0 #18223d"></i>
+      <i class="sw" style="left:118px;top:254px;border-width:0 0 1.5px 1.5px;border-radius:0 0 0 100%;box-shadow:inset 0 2px #18223d"></i>
+      <i class="sw" style="left:375px;top:254px;border-width:0 1.5px 1.5px 0;border-radius:0 0 100% 0;box-shadow:inset 0 2px #18223d"></i>
+      <div class="bx w" data-n="n" style="left:0;top:0;width:71px;height:14px"><b></b><b></b></div>
+      <div class="bx w win" data-n="n" style="left:71px;top:0;width:96px;height:14px"><b></b><b></b></div>
+      <div class="bx w" data-n="n" style="left:167px;top:0;width:141px;height:14px"><b></b><b></b></div>
+      <div class="bx w win" data-n="n" style="left:308px;top:0;width:98px;height:14px"><b></b><b></b></div>
+      <div class="bx w" data-n="n" style="left:406px;top:0;width:98px;height:14px"><b></b><b></b></div>
+      <div class="bx w" data-n="e" style="left:490px;top:14px;width:14px;height:50px"><b></b><b></b></div>
+      <div class="bx w fb" data-n="e" style="left:490px;top:64px;width:14px;height:98px"><b></b><b></b></div>
+      <div class="bx w" data-n="e" style="left:490px;top:162px;width:14px;height:188px"><b></b><b></b></div>
+      <div class="bx w" data-n="s" style="left:0;top:350px;width:253px;height:14px"><b></b><b></b></div>
+      <div class="bx w ln" data-n="s" style="left:253px;top:350px;width:63px;height:14px"><b></b><b></b></div>
+      <div class="bx w" data-n="s" style="left:316px;top:350px;width:188px;height:14px"><b></b><b></b></div>
+      <div class="bx w" data-n="w" style="left:0;top:14px;width:14px;height:336px"><b></b><b></b></div>
+      <div class="bx w" data-n="h" style="left:14px;top:229px;width:203px;height:8px"><b></b><b></b></div>
+      <div class="bx w ln" data-n="h" style="left:217px;top:229px;width:77px;height:8px"><b></b><b></b></div>
+      <div class="bx w" data-n="h" style="left:294px;top:229px;width:196px;height:8px"><b></b><b></b></div>
+      <div class="bx w" data-n="v" style="left:170px;top:237px;width:8px;height:17px"><b></b><b></b></div>
+      <div class="bx w ln" data-n="v" style="left:170px;top:254px;width:8px;height:56px"><b></b><b></b></div>
+      <div class="bx w" data-n="v" style="left:170px;top:310px;width:8px;height:40px"><b></b><b></b></div>
+      <div class="bx w" data-n="v" style="left:367px;top:237px;width:8px;height:17px"><b></b><b></b></div>
+      <div class="bx w ln" data-n="v" style="left:367px;top:254px;width:8px;height:56px"><b></b><b></b></div>
+      <div class="bx w" data-n="v" style="left:367px;top:310px;width:8px;height:40px"><b></b><b></b></div>
+      <div class="bx kk" style="left:14px;top:32px;width:42px;height:175px;--h:63px"><b></b><b></b></div>
+      <div class="bx tb" style="left:98px;top:110px;width:63px;height:63px;--h:52px"></div>
+      <div class="bx so" style="left:210px;top:160px;width:142px;height:40px;--h:30px"><b></b><b></b></div>
+      <div class="bx so" style="left:210px;top:200px;width:142px;height:14px;--h:56px"><b></b><b></b></div>
+      <div class="bx hb" style="left:375px;top:18px;width:111px;height:7px;--h:66px"><b></b><b></b></div>
+      <div class="bx bed" style="left:375px;top:25px;width:111px;height:136px;--h:35px"><b></b><b></b></div>
+      <div class="bx tub" style="left:14px;top:241px;width:56px;height:105px;--h:38px"><b></b><b></b></div>
+      <div class="bx wc" style="left:130px;top:306px;width:28px;height:40px;--h:29px"><b></b><b></b></div>
+    </div>
+  </div>
+  <div class="ov top">
+    <div class="ri gl"><div class="ey" id="re">Planritning</div><b id="rn">Etta · 34 m²</b><span id="ra">Dra för att rotera · klicka på ett rum</span></div>
+    <div class="ctl gl">
+      <div class="seg"><button id="b3" class="on">3D</button><button id="b2">2D</button></div>
+      <button class="tg on" id="lw" title="Sänk väggarna närmast dig">Sänkta väggar<i></i></button>
+      <button class="tg on" id="sp" title="Rotera automatiskt">Snurra<i></i></button>
+      <span class="sep"></span>
+      <button class="ib" id="zo" title="Zooma ut">−</button><button class="ib" id="zi" title="Zooma in">+</button><button class="ib" id="rs" title="Återställ vy">↺</button>
+    </div>
+  </div>
+  <div class="ov bot">
+    <div class="lg gl" id="lg"><button><i></i>Rum &amp; kök <small>22 m²</small></button><button class="t"><i></i>Bad <small>4 m²</small></button><button><i></i>Hall <small>5 m²</small></button><button><i></i>Klk <small>3 m²</small></button></div>
+    <div class="cp gl" title="Norr"><svg id="cp" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="#d5d9e2" stroke-width="1.5"/><path d="M20 12l5 13-5-3-5 3z" fill="#18223d"/><text x="20" y="10.5" text-anchor="middle" font-size="8" font-weight="800" fill="#e8590c" font-family="system-ui,sans-serif">N</text></svg></div>
+  </div>
+</section>
+<aside>
+  <section class="card info">
+    <div class="ey">Bostadsrätt · Vasastan, Stockholm</div>
+    <div class="pr"><b>2 950 000 kr</b><span>86 765 kr/m²</span></div>
+    <dl>
+      <div><dt>Rum</dt><dd>1 rok</dd></div><div><dt>Boarea</dt><dd>34 m²</dd></div><div><dt>Våning</dt><dd>3 tr · hiss</dd></div>
+      <div><dt>Avgift</dt><dd>2 140 kr/mån</dd></div><div><dt>Byggår</dt><dd>1912</dd></div><div><dt>Balkong</dt><dd>Fransk</dd></div>
+    </dl>
+  </section>
+  <section class="card calc">
+    <div class="ch"><h2>Månadskostnad</h2><span class="tag" id="ltv">Belåningsgrad 85 %</span></div>
+    <label class="sl"><div><span>Kontantinsats</span><b id="dpv">15 % · 442 500 kr</b></div><input id="dp" type="range" min="15" max="50" step="1" value="15" style="--p:0%"></label>
+    <label class="sl"><div><span>Ränta</span><b id="irv">3,50 %</b></div><input id="ir" type="range" min="1" max="7" step="0.05" value="3.5" style="--p:41.7%"></label>
+    <label class="sl"><div><span>Amortering</span><b id="amv">2,0 % per år</b></div><input id="am" type="range" min="0" max="3" step="0.5" value="2" style="--p:66.7%"><small id="amh">Amorteringskrav: 2 % per år vid belåningsgrad över 70 %</small></label>
+    <div class="loan"><span>Bolån</span><b id="ln">2 507 500 kr</b></div>
+    <div class="bar"><i class="c1" id="s1" style="width:53.6%"></i><i class="c2" id="s2" style="width:30.7%"></i><i class="c3" id="s3" style="width:15.7%"></i></div>
+    <ul>
+      <li><i class="c1"></i>Räntekostnad<b id="o1">7 314 kr</b></li>
+      <li><i class="c2"></i>Amortering<b id="o2">4 179 kr</b></li>
+      <li><i class="c3"></i>Avgift till föreningen<b id="o3">2 140 kr</b></li>
+    </ul>
+    <div class="tot"><span>Totalt per månad<small id="fn">11 439 kr efter ränteavdrag (30 %)</small></span><b id="tt">13 633 kr</b></div>
+  </section>
+</aside>
+</main>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const W=$('#world'),S=$('#scene'),walls=$$('.w'),rooms=$$('.rm'),chips=$$('#lg button');
+const R=[['Rum & kök',22,'6,8 × 3,1'],['Bad',4,'2,3 × 1,7'],['Hall',5,'2,8 × 1,7'],['Klädkammare',3,'1,7 × 1,7']];
+const D={rx:55,rz:-30,z:1.05},N={n:[0,-1],s:[0,1],e:[1,0],w:[-1,0]};
+let v={...D},m3=true,low=true,spin=true,drag=null,moved=false,sel=-1,t0=0;
+// Kamera + "sänkta väggar": väggar som vetter mot betraktaren sänks så att rummen syns
+function view(){
+  const st=W.style;st.setProperty('--rx',(m3?v.rx:0)+'deg');st.setProperty('--rz',v.rz+'deg');st.setProperty('--z',v.z*Math.min(1,S.clientWidth/820,S.clientHeight/560));st.setProperty('--ty',m3?'26px':'0px');
+  $('#cp').style.transform=`rotate(${v.rz}deg)`;
+  const t=v.rz*Math.PI/180,s=Math.sin(t),c=Math.cos(t);
+  walls.forEach(el=>{const d=el.dataset.n;
+    el.classList.toggle('cut',!m3||(low&&(d=='h'?Math.abs(c)>.3:d=='v'?Math.abs(s)>.3:N[d][0]*s+N[d][1]*c>.3)))});
+  W.classList.toggle('live',spin||!!drag);
+}
+function stop(){spin=false;$('#sp').classList.remove('on')}
+function tick(ts){if(spin&&!drag){v.rz+=Math.min(ts-(t0||ts),50)*.007;view()}t0=ts;requestAnimationFrame(tick)}
+S.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};moved=false;stop();view()});
+addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(Math.abs(dx)+Math.abs(dy)>2)moved=true;drag={x:e.clientX,y:e.clientY};
+  v.rz-=dx*.35;if(m3)v.rx=Math.max(12,Math.min(78,v.rx-dy*.3));view()});
+addEventListener('pointerup',()=>{if(drag){drag=null;view()}});
+const zoom=f=>{stop();v.z=Math.max(.6,Math.min(2.2,v.z*f));view()};
+S.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.1:1/1.1)},{passive:false});
+$('#zi').onclick=()=>zoom(1.2);$('#zo').onclick=()=>zoom(1/1.2);
+function mode(on){m3=on;$('#b3').classList.toggle('on',on);$('#b2').classList.toggle('on',!on);stop();view()}
+$('#b3').onclick=()=>mode(true);
+$('#b2').onclick=()=>{v.rz=Math.round(v.rz/360)*360;mode(false)};
+$('#lw').onclick=()=>{low=!low;$('#lw').classList.toggle('on',low);view()};
+$('#sp').onclick=()=>{spin=!spin;$('#sp').classList.toggle('on',spin);view()};
+$('#rs').onclick=()=>{v={...D,rz:D.rz+Math.round((v.rz-D.rz)/360)*360};low=true;$('#lw').classList.add('on');mode(true)};
+function pick(i){
+  sel=sel===i?-1:i;rooms.forEach((r,j)=>r.classList.toggle('on',j===sel));chips.forEach((c,j)=>c.classList.toggle('on',j===sel));
+  const r=R[sel];
+  $('#re').textContent=r?'Valt rum':'Planritning';$('#rn').textContent=r?r[0]:'Etta · 34 m²';
+  $('#ra').textContent=r?`${r[1]} m² · ca ${r[2]} m`:'Dra för att rotera · klicka på ett rum';
+}
+rooms.forEach((r,i)=>r.addEventListener('click',()=>{if(!moved)pick(i)}));
+chips.forEach((c,i)=>c.onclick=()=>pick(i));
+// Månadskostnad
+const P=2950000,FEE=2140,nf=new Intl.NumberFormat('sv-SE',{maximumFractionDigits:0});
+const kr=n=>nf.format(Math.round(n))+' kr',pc=(n,d)=>n.toLocaleString('sv-SE',{minimumFractionDigits:d,maximumFractionDigits:d})+' %';
+const dp=$('#dp'),ir=$('#ir'),am=$('#am');
+function calc(){
+  [dp,ir,am].forEach(el=>el.style.setProperty('--p',(el.value-el.min)/(el.max-el.min)*100+'%'));
+  const d=+dp.value,r=+ir.value,a=+am.value,cash=P*d/100,loan=P-cash,ltv=100-d;
+  const ri=loan*r/1200,ai=loan*a/1200,tot=ri+ai+FEE,req=ltv>70?2:ltv>50?1:0;
+  $('#dpv').textContent=`${d} % · ${kr(cash)}`;$('#irv').textContent=pc(r,2);$('#amv').textContent=pc(a,1)+' per år';
+  $('#ltv').textContent=`Belåningsgrad ${ltv} %`;$('#ln').textContent=kr(loan);
+  $('#o1').textContent=kr(ri);$('#o2').textContent=kr(ai);$('#o3').textContent=kr(FEE);$('#tt').textContent=kr(tot);
+  [ri,ai,FEE].forEach((x,i)=>$('#s'+(i+1)).style.width=x/tot*100+'%');
+  const h=$('#amh');h.classList.toggle('warn',a<req);
+  h.textContent=a<req?`Under amorteringskravet – minst ${req} % per år krävs`:req?`Amorteringskrav: ${req} % per år vid belåningsgrad över ${req>1?70:50} %`:'Inget amorteringskrav under 50 % belåningsgrad';
+  $('#fn').textContent=`${kr(tot-ri*.3)} efter ränteavdrag (30 %)`;
+}
+[dp,ir,am].forEach(el=>el.addEventListener('input',calc));
+addEventListener('resize',view);calc();view();requestAnimationFrame(tick);
+</script>
+</body>
+</html>

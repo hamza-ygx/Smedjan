@@ -254,7 +254,8 @@ button { cursor: pointer; }
   transition: opacity 0.3s, transform 0.3s, width 0.6s cubic-bezier(.2,.8,.2,1);
 }
 .pip img { display: block; width: 100%; }
-.pip.small { width: 130px; opacity: 0.85; }
+.pip.small { width: 130px; animation: pip-out 0.6s ease 2.4s forwards; pointer-events: none; }
+@keyframes pip-out { to { opacity: 0; transform: translateY(8px) scale(0.9); } }
 .pip:hover { opacity: 0.15; }
 .pip.text { background: var(--panel); color: var(--text); padding: 12px 14px; font-size: 13px; line-height: 1.4; }
 @keyframes pip-in { from { transform: scale(3.2) translate(-30%, -30%); opacity: 0; } }

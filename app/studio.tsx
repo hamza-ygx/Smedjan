@@ -92,6 +92,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const htmlRef = useRef("");
   const pendingRef = useRef("");
   const startedRef = useRef(false);
+  const revealedRef = useRef(false);
   const t0Ref = useRef(0);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -210,6 +211,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
     htmlRef.current = "";
     pendingRef.current = "";
     startedRef.current = false;
+    revealedRef.current = false;
   };
 
   const write = useCallback(
@@ -224,10 +226,15 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         startedRef.current = true;
         reloadPreview();
         post({ type: "begin" });
-        setPhase("building");
         setVia(how);
+        setThought("Skriver designen…");
       }
       htmlRef.current += s;
+      // Keep the reading overlay up while only <head>/CSS streams; reveal once the page body starts.
+      if (!revealedRef.current && /<body[\s>]/i.test(htmlRef.current.slice(-s.length - 6))) {
+        revealedRef.current = true;
+        setPhase("building");
+      }
       post({ type: "chunk", html: s });
     },
     [post, reloadPreview],

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trea · Kungsholmen</title>
+<style>
+  :root{--ink:#1b2236;--ink2:#4a5368;--mute:#8a91a3;--line:#e8e5df;--bg:#f4f2ee;--card:#fff;--acc:#e8590c;--accs:#fff1e8;--m:46px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .app{height:100vh;min-height:620px;max-width:1380px;margin:0 auto;padding:18px 26px 22px;display:grid;grid-template-rows:auto 1fr;gap:14px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px}
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--acc)}
+  h1{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;display:inline-block;padding-bottom:4px;background:linear-gradient(var(--acc),var(--acc)) left bottom/100% 3px no-repeat}
+  .tags{display:flex;gap:6px;margin-left:16px;vertical-align:middle;display:inline-flex}
+  .tag{font-size:12px;font-weight:650;padding:3px 10px;border-radius:99px;background:#fff;border:1px solid var(--line);color:var(--ink2)}
+  .tag.k{background:var(--accs);border-color:#fbd5bd;color:#b8460a}
+  .price{text-align:right;white-space:nowrap}
+  .price small{display:block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  .price strong{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+  .price span{font-size:13px;color:var(--ink2);margin-left:10px}
+  main{display:grid;grid-template-columns:1fr 368px;gap:16px;min-height:0}
+  .stage{position:relative;min-height:440px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(circle,#d5d1c9 1px,transparent 1.5px) 0 0/22px 22px,radial-gradient(900px 500px at 50% 40%,#fdfcfa,#ebe7e0);box-shadow:0 1px 2px rgba(27,34,54,.05),0 12px 32px -18px rgba(27,34,54,.3);perspective:1600px;perspective-origin:50% 40%;transition:perspective .8s;cursor:grab;user-select:none;touch-action:none}
+  .stage:active{cursor:grabbing}
+  .scene{--rx:36deg;--rz:30deg;--z:1.02;--ty:22px;position:absolute;left:50%;top:51%;width:0;height:0;transform-style:preserve-3d;transform:translateY(var(--ty)) scale3d(var(--z),var(--z),var(--z)) rotateX(var(--rx)) rotateZ(var(--rz));transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  .scene.drag{transition:none}
+  .plan{position:absolute;left:calc(-5*var(--m));top:calc(-3.22*var(--m));width:calc(10*var(--m));height:calc(7.8*var(--m));transform-style:preserve-3d}
+  .shade{position:absolute;inset:-4% -3%;transform:translateZ(-22px);background:rgba(40,36,30,.22);filter:blur(22px);border-radius:24px}
+  /* låda: golv, vägg eller möbel — topp + fyra sidor */
+  .b{--z:0;--t:#262d3d;--c:#f5f2ec;position:absolute;left:calc(var(--x)*var(--m));top:calc(var(--y)*var(--m));width:calc(var(--w)*var(--m));height:calc(var(--d)*var(--m));transform:translateZ(calc((var(--z) + var(--h))*var(--m)));transform-style:preserve-3d;background:var(--t);animation:rise .5s cubic-bezier(.2,.9,.3,1.2) both}
+  .b i{position:absolute;inset:0;transform-style:preserve-3d}
+  .b::before,.b::after,.b i::before,.b i::after{content:"";position:absolute}
+  .b::before{inset:100% auto auto 0;width:100%;height:calc(var(--h)*var(--m));transform-origin:top;transform:rotateX(-90deg);background:var(--c)}
+  .b::after{inset:auto auto 100% 0;width:100%;height:calc(var(--h)*var(--m));transform-origin:bottom;transform:rotateX(90deg);background:color-mix(in srgb,var(--c),#3a3020 9%)}
+  .b i::before{inset:0 auto auto 100%;height:100%;width:calc(var(--h)*var(--m));transform-origin:left;transform:rotateY(90deg);background:color-mix(in srgb,var(--c),#3a3020 16%)}
+  .b i::after{inset:0 100% auto auto;height:100%;width:calc(var(--h)*var(--m));transform-origin:right;transform:rotateY(-90deg);background:color-mix(in srgb,var(--c),#3a3020 4%)}
+  @keyframes rise{from{transform:translateZ(calc((var(--z) + var(--h))*var(--m) + 60px))}}
+  .slab{--t:#e4ddd0;--c:#cbc2b3;animation:none}
+  .w{--h:2.5}.hd{--z:2.1;--h:.4}
+  .win{--t:#9cc6e4}
+  .win::before{background-image:linear-gradient(#0000 16%,#a7cfe9 16%,#d6ebf7 40%,#a7cfe9 64%,#0000 64%)}
+  .win::after{background-image:linear-gradient(to top,#0000 16%,#9cc3dd 16%,#cde4f2 40%,#9cc3dd 64%,#0000 64%)}
+  .win i::before{background-image:linear-gradient(to right,#0000 16%,#93bad6 16%,#c4dcec 40%,#93bad6 64%,#0000 64%)}
+  .win i::after{background-image:linear-gradient(to left,#0000 16%,#a3cbe5 16%,#d3e8f5 40%,#a3cbe5 64%,#0000 64%)}
+  .rail{--h:1;--t:#2f3747;--c:rgba(160,200,228,.38)}
+  .sofa{--t:#7d899e;--c:#6c788d}.bed{--t:linear-gradient(#fff 0 26%,#dbe4ee 26%);--c:#e7e3dc}.pil{--t:#fff;--c:#efebe5}
+  .wood{--t:#cf9f6c;--c:#b8885a}.kid{--t:#f28c4c;--c:#e0763a}.chair{--t:#3d465b;--c:#343c50}
+  .kit{--t:#eff1f3;--c:#3c465b}.up{--t:#455068;--c:#4d586f}.frg{--t:#e3e7ec;--c:#d3d9e0}
+  .wc{--t:#fff;--c:#e9edf1}.glass{--t:rgba(150,195,225,.6);--c:rgba(170,212,238,.32)}.door{--t:#b99773;--c:#efe6d8}
+  .rt{--c:transparent;border-radius:50%;--t:radial-gradient(#d8ab79,#c4935f)}
+  .room{--fl:repeating-linear-gradient(90deg,#ead8b9 0 9px,#dcc6a1 9px 10px);position:absolute;left:calc(var(--x)*var(--m));top:calc(var(--y)*var(--m));width:calc(var(--w)*var(--m));height:calc(var(--d)*var(--m));transform:translateZ(1px);background:var(--fl);cursor:pointer;transition:filter .2s}
+  .room:hover{filter:brightness(1.05) saturate(1.1)}
+  .room.tile{--fl:linear-gradient(90deg,#0000 15px,#d3d7dc 0) 0 0/16px 16px,linear-gradient(#0000 15px,#d3d7dc 0) 0 0/16px 16px,#eef0f2}
+  .room.deck{--fl:repeating-linear-gradient(0deg,#d0d3d6 0 8px,#bcc1c6 8px 9px)}
+  .room.on{background:linear-gradient(rgba(232,89,12,.2),rgba(232,89,12,.2)),var(--fl);box-shadow:inset 0 0 0 3px var(--acc)}
+  .room p{position:absolute;transform:translate(-50%,-50%);text-align:center;font-size:11px;line-height:1.2;color:#59606f;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px rgba(255,255,255,.9)}
+  .room p b{display:block;font-size:12.5px;color:#2a3142}
+  .room.on p,.room.on p b{color:#b8460a}
+  .flat{perspective:7000px}.flat .hd{display:none}
+  .ov{position:absolute;display:flex;gap:8px;align-items:center;z-index:2}
+  .tl{top:14px;left:14px}.tr{top:14px;right:14px}.bl{bottom:14px;left:14px;right:14px;flex-wrap:wrap;gap:6px}
+  .sel{background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:10px 14px;min-width:230px;box-shadow:0 8px 24px -14px rgba(27,34,54,.35);display:block}
+  .sel small{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  .sel strong{display:block;font-size:17px;font-weight:800;letter-spacing:-.01em}
+  .sel strong em{font-style:normal;color:var(--acc);margin-left:6px}
+  .sel span{display:block;font-size:12.5px;color:var(--ink2);max-width:250px}
+  .grp{display:flex;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:12px;padding:3px;box-shadow:0 6px 18px -12px rgba(27,34,54,.35)}
+  .grp button{height:32px;min-width:34px;padding:0 10px;border-radius:9px;font-weight:700;font-size:13px;color:var(--ink2);display:grid;place-items:center;transition:background .15s,color .15s}
+  .grp button:hover{background:#f1eee9;color:var(--ink)}
+  .grp button.on{background:var(--ink);color:#fff}
+  .grp svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .chip{font-size:12px;font-weight:650;padding:6px 11px;border-radius:99px;background:rgba(255,255,255,.92);border:1px solid var(--line);color:var(--ink2);transition:all .15s;white-space:nowrap}
+  .chip em{font-style:normal;color:var(--mute);font-weight:600;margin-left:4px}
+  .chip:hover{border-color:#cfc9bf;color:var(--ink)}
+  .chip.on{background:var(--acc);border-color:var(--acc);color:#fff}.chip.on em{color:#ffe3d1}
+  .cmp{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);border:1px solid var(--line);display:grid;place-items:center;box-shadow:0 6px 18px -12px rgba(27,34,54,.35)}
+  .cmp svg{width:30px;height:30px;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  aside{display:flex;flex-direction:column;gap:12px;min-height:0}
+  .card{background:var(--card);border:1px solid #ece9e3;border-radius:16px;padding:15px 18px;box-shadow:0 1px 2px rgba(27,34,54,.04),0 10px 26px -18px rgba(27,34,54,.28)}
+  h2{font-size:13px;font-weight:750;letter-spacing:.02em;color:var(--ink2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  h2 span{font-weight:600;color:var(--mute);font-size:12px}
+  .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 12px}
+  .facts dt{font-size:11.5px;color:var(--mute)}
+  .facts dd{font-size:14px;font-weight:700;white-space:nowrap}
+  .feat{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .feat span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:8px;background:#f4f2ee;color:var(--ink2)}
+  .feat span::before{content:"✓";color:var(--acc);font-weight:800;margin-right:5px}
+  .calc{flex:1;display:flex;flex-direction:column}
+  .sl{margin-bottom:10px}
+  .sl label{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+  .sl output{font-weight:750;color:var(--ink);font-variant-numeric:tabular-nums}
+  .hint{font-size:11.5px;color:var(--mute);margin-top:3px}.hint.warn{color:#c2410c}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:9px;background:linear-gradient(var(--acc),var(--acc)) 0/var(--p) 100% no-repeat,#ebe8e2;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--acc);box-shadow:0 2px 6px rgba(232,89,12,.35);transition:transform .15s}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--acc)}
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
+  .bar{display:flex;height:8px;border-radius:9px;overflow:hidden;margin:4px 0 8px;gap:2px}
+  .bar span{transition:flex-basis .3s}
+  .rows div{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .rows b{color:var(--ink);font-weight:700}
+  .rows i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:7px}
+  .c1{background:var(--acc)}.c2{background:#2f3a52}.c3{background:#cbc4b8}
+  .tot{margin-top:auto;padding-top:10px;border-top:1px dashed #e2ded6;display:flex;justify-content:space-between;align-items:flex-end}
+  .tot small{display:block;font-size:12px;color:var(--mute)}
+  .tot strong{font-size:27px;font-weight:800;letter-spacing:-.02em;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1.1}
+  .tot .lbl{font-weight:700;font-size:14px}
+  @media (max-width:980px){:root{--m:40px}.app{height:auto}main{grid-template-columns:1fr}.stage{height:520px}.tags{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div>
+    <div class="eyebrow">Till salu · Kungsholmen, Stockholm</div>
+    <h1>Trea · Kungsholmen</h1><div class="tags"><span class="tag">3 rok</span><span class="tag">78 m²</span><span class="tag k">Barnvänligt</span></div>
+  </div>
+  <div class="price"><small>Pris</small><strong>6 250 000 kr</strong><span>80 128 kr/m²</span></div>
+</header>
+<main>
+<section class="stage" id="stage">
+  <div class="ov tl"><div class="sel" id="sel"><small>Planlösning</small><strong>3 rok <em>78 m²</em></strong><span>Klicka på ett rum för att se namn och yta.</span></div></div>
+  <div class="ov tr">
+    <div class="grp"><button class="on" data-v="3d">3D</button><button data-v="2d">2D</button></div>
+    <div class="grp"><button id="zo" title="Zooma ut"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><button id="zi" title="Zooma in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button id="spin" title="Snurra automatiskt"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button><button id="reset" title="Återställ vy"><svg viewBox="0 0 24 24"><path d="M3 12h4M17 12h4M12 3v4M12 17v4"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+    <div class="cmp" title="Norr"><svg id="needle" viewBox="0 0 40 40" style="transform:rotate(30deg)"><path d="M20 5l6 17h-12z" fill="#e8590c"/><path d="M20 35l-6-13h12z" fill="#c9c3b8"/><text x="20" y="4.5" text-anchor="middle" font-size="7" font-weight="800" fill="#1b2236" dy="2.6" font-family="system-ui,sans-serif">N</text></svg></div>
+  </div>
+  <div class="scene" id="scene"><div class="plan">
+    <div class="shade"></div>
+    <!-- golv -->
+    <div class="b slab" style="--x:0;--y:0;--w:10;--d:7.8;--z:-.3;--h:.3"><i></i></div>
+    <div class="b slab" style="--x:.6;--y:-1.35;--w:3.55;--d:1.35;--z:-.22;--h:.22"><i></i></div>
+    <div class="room" data-r="vardagsrum" style="--x:.25;--y:.25;--w:4.75;--d:4.15"><p style="left:43%;top:24%"><b>Vardagsrum</b>22 m²</p></div>
+    <div class="room" data-r="sovrum1" style="--x:5;--y:.25;--w:2.43;--d:4.15"><p style="left:50%;top:60%"><b>Sovrum</b>10,5 m²</p></div>
+    <div class="room" data-r="sovrum2" style="--x:7.43;--y:.25;--w:2.32;--d:4.15"><p style="left:52%;top:60%"><b>Sovrum</b>11,5 m²</p></div>
+    <div class="room tile" data-r="kok" style="--x:.25;--y:4.4;--w:3.75;--d:3.15"><p style="left:47%;top:15%"><b>Kök</b>13,5 m²</p></div>
+    <div class="room" data-r="hall" style="--x:4;--y:4.4;--w:4.2;--d:3.15"><p style="left:30%;top:40%"><b>Hall</b>12 m²</p></div>
+    <div class="room" data-r="klk" style="--x:6.4;--y:6.4;--w:1.8;--d:1.15;transform:translateZ(2px)"><p style="left:55%;top:52%"><b>Klk</b></p></div>
+    <div class="room tile" data-r="bad" style="--x:8.2;--y:4.4;--w:1.55;--d:3.15"><p style="left:56%;top:53%"><b>Bad</b>6 m²</p></div>
+    <div class="room deck" data-r="balkong" style="--x:.6;--y:-1.35;--w:3.55;--d:1.35"><p style="left:44%;top:50%"><b>Balkong</b>5 m²</p></div>
+    <!-- ytterväggar -->
+    <div class="b w" style="--x:0;--y:0;--w:.6;--d:.25"><i></i></div>
+    <div class="b w win" style="--x:.6;--y:0;--w:2;--d:.25"><i></i></div>
+    <div class="b w" style="--x:2.6;--y:0;--w:.6;--d:.25"><i></i></div>
+    <div class="b hd" style="--x:3.2;--y:0;--w:.9;--d:.25"><i></i></div>
+    <div class="b w" style="--x:4.1;--y:0;--w:1.5;--d:.25"><i></i></div>
+    <div class="b w win" style="--x:5.6;--y:0;--w:1.2;--d:.25"><i></i></div>
+    <div class="b w" style="--x:6.8;--y:0;--w:1.15;--d:.25"><i></i></div>
+    <div class="b w win" style="--x:7.95;--y:0;--w:1.45;--d:.25"><i></i></div>
+    <div class="b w" style="--x:9.4;--y:0;--w:.6;--d:.25"><i></i></div>
+    <div class="b w" style="--x:9.75;--y:.25;--w:.25;--d:5.15"><i></i></div>
+    <div class="b w win" style="--x:9.75;--y:5.4;--w:.25;--d:1.2"><i></i></div>
+    <div class="b w" style="--x:9.75;--y:6.6;--w:.25;--d:.95"><i></i></div>
+    <div class="b w" style="--x:5.9;--y:7.55;--w:4.1;--d:.25"><i></i></div>
+    <div class="b hd" style="--x:5;--y:7.55;--w:.9;--d:.25"><i></i></div>
+    <div class="b w" style="--x:0;--y:7.55;--w:5;--d:.25"><i></i></div>
+    <div class="b w" style="--x:0;--y:6.8;--w:.25;--d:.75"><i></i></div>
+    <div class="b w win" style="--x:0;--y:5.2;--w:.25;--d:1.6"><i></i></div>
+    <div class="b w" style="--x:0;--y:.25;--w:.25;--d:4.95"><i></i></div>
+    <div class="b rail" style="--x:.6;--y:-1.35;--w:3.55;--d:.06"><i></i></div>
+    <div class="b rail" style="--x:.6;--y:-1.29;--w:.06;--d:1.29"><i></i></div>
+    <div class="b rail" style="--x:4.09;--y:-1.29;--w:.06;--d:1.29"><i></i></div>
+    <!-- innerväggar -->
+    <div class="b w" style="--x:4.94;--y:.25;--w:.12;--d:4.09"><i></i></div>
+    <div class="b w" style="--x:7.37;--y:.25;--w:.12;--d:4.09"><i></i></div>
+    <div class="b w" style="--x:.25;--y:4.34;--w:3.9;--d:.12"><i></i></div>
+    <div class="b hd" style="--x:4.15;--y:4.34;--w:.79;--d:.12"><i></i></div>
+    <div class="b w" style="--x:4.94;--y:4.34;--w:.46;--d:.12"><i></i></div>
+    <div class="b hd" style="--x:5.4;--y:4.34;--w:.8;--d:.12"><i></i></div>
+    <div class="b w" style="--x:6.2;--y:4.34;--w:1.3;--d:.12"><i></i></div>
+    <div class="b hd" style="--x:7.5;--y:4.34;--w:.64;--d:.12"><i></i></div>
+    <div class="b w" style="--x:8.14;--y:4.34;--w:1.61;--d:.12"><i></i></div>
+    <div class="b w" style="--x:3.94;--y:4.46;--w:.12;--d:.54"><i></i></div>
+    <div class="b hd" style="--x:3.94;--y:5;--w:.12;--d:1.3"><i></i></div>
+    <div class="b w" style="--x:3.94;--y:6.3;--w:.12;--d:1.25"><i></i></div>
+    <div class="b w" style="--x:8.14;--y:4.46;--w:.12;--d:.64"><i></i></div>
+    <div class="b hd" style="--x:8.14;--y:5.1;--w:.12;--d:.8"><i></i></div>
+    <div class="b w" style="--x:8.14;--y:5.9;--w:.12;--d:1.65"><i></i></div>
+    <div class="b w" style="--x:6.34;--y:6.34;--w:.91;--d:.12"><i></i></div>
+    <div class="b hd" style="--x:7.25;--y:6.34;--w:.89;--d:.12"><i></i></div>
+    <div class="b w" style="--x:6.34;--y:6.46;--w:.12;--d:1.09"><i></i></div>
+    <!-- möbler -->
+    <div class="b sofa" style="--x:.45;--y:3.42;--w:2.5;--d:.62;--h:.42"><i></i></div>
+    <div class="b sofa" style="--x:.45;--y:4.04;--w:2.5;--d:.28;--h:.8"><i></i></div>
+    <div class="b wood" style="--x:3.82;--y:2.16;--w:.12;--d:.12;--h:.43"><i></i></div>
+    <div class="b rt" style="--x:3.48;--y:1.82;--w:.8;--d:.8;--h:.45"><i></i></div>
+    <div class="b door" style="--x:4.88;--y:3.55;--w:.04;--d:.78;--h:2.05"><i></i></div>
+    <div class="b door" style="--x:3.2;--y:-.86;--w:.04;--d:.86;--h:2.05"><i></i></div>
+    <div class="b bed" style="--x:5.55;--y:.35;--w:1.7;--d:2.05;--h:.5"><i></i></div>
+    <div class="b pil" style="--x:5.65;--y:.45;--w:.7;--d:.38;--z:.5;--h:.1"><i></i></div>
+    <div class="b pil" style="--x:6.45;--y:.45;--w:.7;--d:.38;--z:.5;--h:.1"><i></i></div>
+    <div class="b door" style="--x:5.4;--y:3.54;--w:.04;--d:.8;--h:2.05"><i></i></div>
+    <div class="b kid" style="--x:7.6;--y:.3;--w:1.1;--d:.6;--h:.75"><i></i></div>
+    <div class="b chair" style="--x:7.92;--y:1.02;--w:.45;--d:.45;--h:.45"><i></i></div>
+    <div class="b bed" style="--x:8.75;--y:.35;--w:.9;--d:2;--h:.5"><i></i></div>
+    <div class="b pil" style="--x:8.85;--y:.45;--w:.7;--d:.38;--z:.5;--h:.1"><i></i></div>
+    <div class="b door" style="--x:7.5;--y:3.7;--w:.04;--d:.64;--h:2.05"><i></i></div>
+    <div class="b kit" style="--x:.25;--y:6.95;--w:2.9;--d:.6;--h:.9"><i></i></div>
+    <div class="b up" style="--x:.25;--y:7.2;--w:2.9;--d:.35;--z:1.45;--h:.7"><i></i></div>
+    <div class="b frg" style="--x:3.15;--y:6.95;--w:.65;--d:.6;--h:1.9"><i></i></div>
+    <div class="b wood" style="--x:1.2;--y:5.3;--w:1.7;--d:.9;--h:.75"><i></i></div>
+    <div class="b chair" style="--x:.68;--y:5.53;--w:.4;--d:.45;--h:.45"><i></i></div>
+    <div class="b chair" style="--x:3.02;--y:5.53;--w:.4;--d:.45;--h:.45"><i></i></div>
+    <div class="b chair" style="--x:1.45;--y:6.3;--w:.45;--d:.4;--h:.45"><i></i></div>
+    <div class="b chair" style="--x:2.2;--y:6.3;--w:.45;--d:.4;--h:.45"><i></i></div>
+    <div class="b door" style="--x:5;--y:6.7;--w:.04;--d:.85;--h:2.05"><i></i></div>
+    <div class="b door" style="--x:8.26;--y:5.1;--w:.76;--d:.04;--h:2.05"><i></i></div>
+    <div class="b wc" style="--x:9.25;--y:4.5;--w:.42;--d:.6;--h:.42"><i></i></div>
+    <div class="b wc" style="--x:8.26;--y:6.68;--w:.86;--d:.85;--h:.08"><i></i></div>
+    <div class="b glass" style="--x:8.26;--y:6.64;--w:.86;--d:.03;--h:1.95"><i></i></div>
+    <div class="b glass" style="--x:9.1;--y:6.67;--w:.03;--d:.86;--h:1.95"><i></i></div>
+  </div></div>
+  <div class="ov bl" id="chips">
+    <button class="chip" data-r="vardagsrum">Vardagsrum<em>22 m²</em></button>
+    <button class="chip" data-r="kok">Kök<em>13,5 m²</em></button>
+    <button class="chip" data-r="sovrum1">Sovrum<em>10,5 m²</em></button>
+    <button class="chip" data-r="sovrum2">Sovrum<em>11,5 m²</em></button>
+    <button class="chip" data-r="hall">Hall<em>12 m²</em></button>
+    <button class="chip" data-r="bad">Bad<em>6 m²</em></button>
+    <button class="chip" data-r="balkong">Balkong<em>5 m²</em></button>
+  </div>
+</section>
+<aside>
+  <section class="card">
+    <h2>Objektinformation <span>Bostadsrätt</span></h2>
+    <dl class="facts">
+      <div><dt>Område</dt><dd>Kungsholmen</dd></div>
+      <div><dt>Rum</dt><dd>3 rok</dd></div>
+      <div><dt>Boarea</dt><dd>78 m²</dd></div>
+      <div><dt>Avgift</dt><dd>4 380 kr/mån</dd></div>
+      <div><dt>Byggår</dt><dd>1931</dd></div>
+      <div><dt>Sovrum</dt><dd>2 st</dd></div>
+    </dl>
+    <div class="feat"><span>Balkong 5 m²</span><span>Hiss</span><span>Förråd</span></div>
+  </section>
+  <section class="card calc">
+    <h2>Månadskostnad <span>vid pris 6 250 000 kr</span></h2>
+    <div class="sl"><label for="dp">Kontantinsats <output id="dpv">15 % · 937 500 kr</output></label><input type="range" id="dp" min="15" max="50" step="1" value="15" style="--p:0%"></div>
+    <div class="sl"><label for="ir">Ränta <output id="irv">3,25 %</output></label><input type="range" id="ir" min="1" max="7" step="0.05" value="3.25" style="--p:37.5%"></div>
+    <div class="sl"><label for="am">Amortering per år <output id="amv">2 %</output></label><input type="range" id="am" min="0" max="3" step="0.5" value="2" style="--p:66.67%"><div class="hint" id="krav">Amorteringskrav vid 85 % belåning: 2 %</div></div>
+    <div class="bar" id="bar"><span class="c1" style="flex:0 0 52.1%"></span><span class="c2" style="flex:0 0 32.1%"></span><span class="c3" style="flex:1"></span></div>
+    <div class="rows">
+      <div><span>Lån <span id="ltv">(85 % belåning)</span></span><b id="loan">5 312 500 kr</b></div>
+      <div><span><i class="c1"></i>Räntekostnad</span><b id="ri">14 388 kr</b></div>
+      <div><span><i class="c2"></i>Amortering</span><b id="amo">8 854 kr</b></div>
+      <div><span><i class="c3"></i>Avgift</span><b>4 380 kr</b></div>
+    </div>
+    <div class="tot"><div><span class="lbl">Totalt per månad</span><small id="net">ca 23 851 kr efter ränteavdrag</small></div><strong id="tot">27 622 kr</strong></div>
+  </section>
+</aside>
+</main>
+</div>
+<script>
+(() => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const stage = $('#stage'), scene = $('#scene'), needle = $('#needle');
+  const D = { rx: 36, rz: 30, z: 1.02, ty: 22 }, V = { ...D };
+  let flat = false, spin = false, drag = null;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  function view() {
+    scene.style.setProperty('--rx', V.rx + 'deg');
+    scene.style.setProperty('--rz', V.rz + 'deg');
+    scene.style.setProperty('--z', V.z);
+    scene.style.setProperty('--ty', V.ty + 'px');
+    needle.style.transform = `rotate(${V.rz}deg)`;
+  }
+  function mode(is2d) {
+    flat = is2d;
+    stage.classList.toggle('flat', flat);
+    $$('[data-v]').forEach(b => b.classList.toggle('on', (b.dataset.v === '2d') === flat));
+    Object.assign(V, flat ? { rx: 0, rz: 0, z: 1.05, ty: 12 } : D);
+    view();
+  }
+  $$('[data-v]').forEach(b => b.onclick = () => mode(b.dataset.v === '2d'));
+  const zoom = f => { V.z = clamp(V.z * f, .55, 2.4); view(); };
+  $('#zi').onclick = () => zoom(1.2);
+  $('#zo').onclick = () => zoom(1 / 1.2);
+  $('#reset').onclick = () => { setSpin(false); Object.assign(V, D); mode(false); pick(null); };
+  function setSpin(on) { spin = on; $('#spin').classList.toggle('on', on); scene.classList.toggle('drag', on); }
+  $('#spin').onclick = () => setSpin(!spin);
+  (function loop() { if (spin && !drag) { V.rz += .25; view(); } requestAnimationFrame(loop); })();
+  stage.addEventListener('wheel', e => { e.preventDefault(); zoom(Math.exp(-e.deltaY * .0012)); }, { passive: false });
+
+  stage.addEventListener('pointerdown', e => {
+    if (e.target.closest('button, .sel')) return;
+    drag = { x: e.clientX, y: e.clientY, moved: 0 };
+    stage.setPointerCapture(e.pointerId);
+    scene.classList.add('drag');
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY;
+    if (drag.moved < 4) return;
+    if (spin) setSpin(false);
+    V.rz += dx * .4;
+    if (!flat) V.rx = clamp(V.rx - dy * .3, 0, 82);
+    view();
+  });
+  const end = e => {
+    if (!drag) return;
+    if (!spin) scene.classList.remove('drag');
+    if (drag.moved < 4 && e.type === 'pointerup') {
+      const hit = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList.contains('room'));
+      pick(hit ? hit.dataset.r : null);
+    }
+    drag = null;
+  };
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+
+  const ROOMS = {
+    vardagsrum: ['Vardagsrum', 22, 'Ljust hörnrum med soffgrupp och utgång till balkongen.'],
+    sovrum1: ['Sovrum', 10.5, 'Plats för dubbelsäng, fönster åt norr.'],
+    sovrum2: ['Sovrum', 11.5, 'Perfekt barnrum med säng och skrivbord vid fönstret.'],
+    kok: ['Kök', 13.5, 'Matplats för sex och fönster i västerläge.'],
+    hall: ['Hall', 12, 'Rymlig entré med klädkammare.'],
+    klk: ['Klädkammare', 0, 'Klädkammare med förvaring direkt från hallen.'],
+    bad: ['Badrum', 6, 'Helkaklat med dusch och fönster.'],
+    balkong: ['Balkong', 5, 'Nås från vardagsrummet via balkongdörren.']
+  };
+  const area = n => new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 1 }).format(n) + ' m²';
+  let cur = null;
+  function pick(id) {
+    if (id === cur) id = null;
+    cur = id;
+    $$('.room, .chip').forEach(el => el.classList.toggle('on', el.dataset.r === id));
+    const r = ROOMS[id], s = $('#sel');
+    s.innerHTML = r
+      ? `<small>Valt rum</small><strong>${r[0]} ${r[1] ? `<em>${area(r[1])}</em>` : ''}</strong><span>${r[2]}</span>`
+      : `<small>Planlösning</small><strong>3 rok <em>78 m²</em></strong><span>Klicka på ett rum för att se namn och yta.</span>`;
+  }
+  $$('.chip').forEach(c => c.onclick = () => pick(c.dataset.r));
+
+  // Månadskostnad
+  const PRICE = 6250000, FEE = 4380;
+  const kr = n => new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' kr';
+  const pc = n => new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 2 }).format(n) + ' %';
+  function fill(el) { el.style.setProperty('--p', (el.value - el.min) / (el.max - el.min) * 100 + '%'); }
+  function calc() {
+    const dp = +$('#dp').value, ir = +$('#ir').value, am = +$('#am').value;
+    const loan = PRICE * (1 - dp / 100), ltv = 100 - dp;
+    const ri = loan * ir / 100 / 12, amo = loan * am / 100 / 12, tot = ri + amo + FEE;
+    const yr = ri * 12, ded = (Math.min(yr, 100000) * .3 + Math.max(0, yr - 100000) * .21) / 12;
+    const krav = ltv > 70 ? 2 : ltv > 50 ? 1 : 0;
+    $('#dpv').textContent = `${pc(dp)} · ${kr(PRICE * dp / 100)}`;
+    $('#irv').textContent = pc(ir);
+    $('#amv').textContent = pc(am);
+    const k = $('#krav');
+    k.textContent = am < krav ? `Under amorteringskravet på ${pc(krav)} vid ${pc(ltv)} belåning` : `Amorteringskrav vid ${pc(ltv)} belåning: ${pc(krav)}`;
+    k.classList.toggle('warn', am < krav);
+    $('#ltv').textContent = `(${pc(ltv)} belåning)`;
+    $('#loan').textContent = kr(loan);
+    $('#ri').textContent = kr(ri);
+    $('#amo').textContent = kr(amo);
+    $('#tot').textContent = kr(tot);
+    $('#net').textContent = `ca ${kr(tot - ded)} efter ränteavdrag`;
+    const [a, b] = $$('#bar span');
+    a.style.flex = `0 0 ${ri / tot * 100}%`; b.style.flex = `0 0 ${amo / tot * 100}%`;
+    $$('input[type=range]').forEach(fill);
+  }
+  $$('input[type=range]').forEach(i => i.addEventListener('input', calc));
+  calc(); view();
+})();
+</script>
+</body>
+</html>
