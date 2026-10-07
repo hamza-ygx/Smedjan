@@ -9,6 +9,7 @@ const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif
 const MAX_IMAGE_B64 = 5_000_000;
 const MAX_HTML = 300_000;
 const MAX_PROMPT = 2_000;
+const MAX_NOTE = 5_000;
 const EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
 
 // One NDJSON event per line: {t:"start"}, {t:"think"|"html", d} … then {t:"done", stop} or {t:"error", msg}.
@@ -27,7 +28,7 @@ function parse(body: unknown): BuildRequest | string {
         kind: "image",
         image: { data: img.data, mediaType: img.mediaType as "image/jpeg" },
         title: str(b.title, 100) ?? undefined,
-        note: str(b.note, MAX_PROMPT) ?? undefined,
+        note: str(b.note, MAX_NOTE) ?? undefined,
       };
     }
     case "text": {

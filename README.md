@@ -2,7 +2,7 @@
 
 Live stage demo: pick a hand-drawn sketch (or type an idea) and a working app is forged in front of the audience. Claude reads the sketch and streams a self-contained HTML app, and the browser renders it progressively as the code arrives.
 
-- **Lägenheter (the whole show):** three hand-drawn floor plans (one-, two- and three-room). Click one and it becomes an interactive 3D model, built wall by wall as the code streams, with rotate/zoom, click-a-room for its area, and a monthly cost calculator (loan + fee).
+- **Bostäder (the whole show):** six hand-drawn floor plans: etta, tvåa, trea, a villa with a pool, a penthouse with a roof-terrace jacuzzi, and a lake cabin with a sauna and jetty. A scanner beam first sweeps the whole drawing down and back up (~3.4 s). Click one and it becomes an interactive 3D model, built wall by wall as the code streams, with rotate/zoom, click-a-room for its area, and a monthly cost calculator (loan + fee).
 - **Input:** the three apartments, free-text ideas, or any image you drop/paste (the last two need an API key).
 - **Output:** a polished, interactive Swedish web app, built live in a sandboxed preview.
 - **Follow-ups:** "gör den mörk", "lägg till ett diagram". Each edit rebuilds from the current version, with version history (← →).
@@ -14,7 +14,7 @@ Replays push the invisible `<head>`/CSS through 8× faster and stream the visibl
 
 ## Without an API key
 
-Smedjan runs fine with no `ANTHROPIC_API_KEY`: it locks to the cached replays, so all 3 apartments still build in front of the audience. Free text, image drop and edits are hidden, and the settings panel says why. The API route refuses live calls, so nothing can spend credit. Add `ANTHROPIC_API_KEY` **and** `APP_PASSCODE` in Vercel and redeploy to switch live mode on. The passcode gate also turns on then.
+Smedjan runs fine with no `ANTHROPIC_API_KEY`: it locks to the cached replays, so all 6 homes still build in front of the audience. Free text, image drop and edits are hidden, and the settings panel says why. The API route refuses live calls, so nothing can spend credit. Add `ANTHROPIC_API_KEY` **and** `APP_PASSCODE` in Vercel and redeploy to switch live mode on. The passcode gate also turns on then.
 
 ## Run locally
 
@@ -55,7 +55,7 @@ Open each one in the app with the mode set to *Repris*, keep the ones you like, 
 
 | Key | Action |
 |---|---|
-| `1`–`3` | Build apartment 1–3 |
+| `1`–`6` | Build home 1–6 |
 | `F` | Fullscreen presentation (Esc to leave) |
 | `P` | Presentation mode without fullscreen (hides the sidebar) |
 | `C` | Show the code as it's written |
@@ -71,9 +71,9 @@ Settings (gear icon): build mode *Auto* / *Bara live* / *Repris*, replay speed, 
 
 - [ ] Real replays recorded and committed (`npm run record`).
 - [ ] Log in on the presentation laptop the day before. The session lasts 14 days.
-- [ ] Load the page once on venue Wi-Fi so sketches and replays are cached in memory. After that, Auto mode survives a dead network for all 3 apartments. Free text and edits always need the network.
+- [ ] Load the page once on venue Wi-Fi so sketches and replays are cached in memory. After that, Auto mode survives a dead network for all 6 homes. Free text and edits always need the network.
 - [ ] Browser zoom so the stage fills the projector; press `P`.
-- [ ] Rehearse all three apartments. Replays take ~6–8 s; live builds 30–60 s depending on effort and app size.
+- [ ] Rehearse all six homes. Replays take ~6–8 s; live builds 30–60 s depending on effort and app size.
 - [ ] Backup: `npm run dev` on the laptop with a phone hotspot.
 
 ## How it works

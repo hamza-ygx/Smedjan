@@ -22,6 +22,8 @@ const DEFAULT_SETTINGS: Settings = { mode: "auto", speed: 3200, code: false };
 const SETTINGS_KEY = "smedjan.settings.v2";
 // <head>/CSS is invisible on stage, so replays push it through this much faster.
 const HEAD_SPEEDUP = 8;
+// One full scanner sweep over the drawing (down, then back up) before the build is revealed.
+const SCAN_MS = 3400;
 const FIRST_EVENT_MS = 8_000; // API never answered → fall back
 const FIRST_HTML_MS = 40_000; // API answered but no output yet → fall back
 const STALL_MS = 20_000; // output stopped mid-stream → fall back
@@ -82,6 +84,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const [edit, setEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [runKey, setRunKey] = useState(0);
   const visible = SKETCHES;
   const [dragging, setDragging] = useState(false);
   const [replays, setReplays] = useState<Record<string, string | null>>({});
@@ -95,6 +98,8 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const pendingRef = useRef("");
   const startedRef = useRef(false);
   const revealedRef = useRef(false);
+  const scanUntilRef = useRef(0);
+  const liveThoughtRef = useRef(false);
   const t0Ref = useRef(0);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -229,13 +234,15 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         reloadPreview();
         post({ type: "begin" });
         setVia(how);
-        setThought("Skriver designen…");
+        if (performance.now() >= scanUntilRef.current) setThought("Skriver designen…");
       }
       htmlRef.current += s;
       // Keep the reading overlay up while only <head>/CSS streams; reveal once the page body starts.
       if (!revealedRef.current && /<body[\s>]/i.test(htmlRef.current.slice(-s.length - 6))) {
         revealedRef.current = true;
-        setPhase("building");
+        const run = runRef.current;
+        const wait = Math.max(0, scanUntilRef.current - performance.now());
+        setTimeout(() => run === runRef.current && setPhase((p) => (p === "thinking" ? "building" : p)), wait);
       }
       post({ type: "chunk", html: s });
     },
@@ -245,11 +252,15 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
   const replay = useCallback(
     async (html: string, alive: () => boolean) => {
       setVia("replay");
-      await new Promise((r) => setTimeout(r, 500 + Math.random() * 400));
+      await new Promise((r) => setTimeout(r, 300 + Math.random() * 300));
       const bodyAt = html.search(/<body[\s>]/i);
       let i = 0;
       while (i < html.length) {
         if (!alive()) throw new Stopped();
+        if (i >= bodyAt && performance.now() < scanUntilRef.current) {
+          await new Promise((r) => setTimeout(r, scanUntilRef.current - performance.now()));
+          if (!alive()) throw new Stopped();
+        }
         const boost = bodyAt > 0 && i < bodyAt ? HEAD_SPEEDUP : 1;
         const per = settingsRef.current.speed * 0.03 * boost * (0.6 + Math.random() * 0.8);
         let end = Math.min(html.length, i + Math.max(4, Math.round(per)));
@@ -308,6 +319,8 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             if (ev.t === "start") {
               arm(FIRST_HTML_MS);
             } else if (ev.t === "think") {
+              if (!liveThoughtRef.current) setThought("");
+              liveThoughtRef.current = true;
               setThought((p) => (p + ev.d).replace(/\s+/g, " ").slice(-300));
             } else if (ev.t === "html") {
               arm(STALL_MS);
@@ -351,6 +364,16 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
       setElapsed(0);
       setShowSettings(false);
       t0Ref.current = performance.now();
+      liveThoughtRef.current = false;
+      setRunKey((k) => k + 1);
+      const scans = src.kind === "sketch" || src.kind === "upload";
+      scanUntilRef.current = t0Ref.current + (scans ? SCAN_MS : 0);
+      if (scans) {
+        setThought("Skannar ritningen…");
+        setTimeout(() => {
+          if (alive() && !liveThoughtRef.current) setThought("Läser av rum, mått och möbler…");
+        }, SCAN_MS / 2);
+      }
 
       if (!liveAvailable && !fallback) {
         setToast(NO_KEY);
@@ -616,7 +639,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         <div className="brand">
           <I.Anvil />
           Smedjan
-          <small>från ritning till lägenhet</small>
+          <small>från ritning till bostad</small>
         </div>
         <div className="spacer" />
         <div className="status" aria-live="polite">
@@ -700,7 +723,7 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
         {grouped.map(([cat, items]) => (
           <section key={cat}>
             <h3>{cat}</h3>
-            <div className="sketch-grid wide">
+            <div className="sketch-grid">
               {items.map(({ sketch, key }) => (
                 <button
                   key={sketch.id}
@@ -781,17 +804,17 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
               <div className="hero">
                 <I.Anvil />
                 <h1>
-                  Välj en lägenhet.
+                  Välj en bostad.
                   <br />
                   <em>Se den byggas.</em>
                 </h1>
                 <p>
                   {liveAvailable
-                    ? "Klicka på en handritad planritning, så byggs lägenheten i 3D framför dina ögon. Du kan också beskriva en egen idé."
-                    : "Klicka på en handritad planritning, så byggs lägenheten i 3D framför dina ögon."}
+                    ? "Klicka på en handritad planritning, så byggs bostaden i 3D framför dina ögon. Du kan också beskriva en egen idé."
+                    : "Klicka på en handritad planritning, så byggs bostaden i 3D framför dina ögon."}
                 </p>
                 <div className="keys">
-                  <span><kbd>1</kbd>–<kbd>3</kbd>lägenheter</span>
+                  <span><kbd>1</kbd>–<kbd>6</kbd>bostäder</span>
                   <span><kbd>F</kbd>helskärm</span>
                   <span><kbd>C</kbd>kod</span>
                   {liveAvailable && <span><kbd>E</kbd>ändra</span>}
@@ -803,9 +826,14 @@ export function Studio({ gate, live: liveAvailable }: { gate: boolean; live: boo
             <div className={`overlay${phase === "thinking" ? "" : " hide"}`}>
               <div className="reading">
                 {sourceImage ? (
-                  <div className="subject">
+                  <div className="subject" key={runKey}>
                     <img src={sourceImage} alt="" />
-                    <div className="scan" />
+                    <div className="scan-grid" />
+                    <div className="beam" style={{ animationDuration: `${SCAN_MS / 2}ms` }} />
+                    <i className="corner tl" />
+                    <i className="corner tr" />
+                    <i className="corner bl" />
+                    <i className="corner br" />
                   </div>
                 ) : (
                   sourceText && <div className="quote">{sourceText}</div>

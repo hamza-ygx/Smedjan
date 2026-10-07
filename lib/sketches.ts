@@ -10,16 +10,38 @@ export interface Sketch {
   subtitle?: string;
 }
 
-const APARTMENT_BRIEF = `Det här är en handritad planritning av en lägenhet till salu. Bygg lägenheten som en interaktiv 3D-modell i ren HTML och CSS (CSS 3D-transforms, inga bibliotek, ingen canvas):
-- Golvet som en platta och varje vägg som ett eget element, extruderat i rätt proportioner enligt planens skala i meter, med dörröppningar och fönster. Rumsnamn och yta ligger på golvet, och enkla möbler (säng, soffa, bord, kök, badkar) är låga block.
-- Skriv golv, väggar och möbler som HTML-element direkt i markupen med inline-positioner, i ordningen golv → ytterväggar → innerväggar → möbler, så att lägenheten byggs upp vägg för vägg medan koden strömmar in. JavaScript lägger bara till interaktion.
-- Dra för att rotera, scrolla eller använd knappar för att zooma, växla mellan 3D och 2D ovanifrån, och återställ vyn. Ett klick på ett rum markerar golvet och visar rummets namn och yta.
-- Bredvid modellen: objektinformationen från skissen (område, rum, yta, pris, avgift, byggår och övrigt) och en månadskostnadskalkyl med reglage för kontantinsats (minst 15 %), ränta och amortering. Visa lån, räntekostnad, amortering, avgift och total kostnad per månad.`;
+const APARTMENT_BRIEF = `Det här är en handritad planritning av en bostad till salu. Bygg bostaden som en imponerande, interaktiv 3D-modell i ren HTML och CSS (CSS 3D-transforms, inga bibliotek, ingen canvas eller WebGL).
+
+Modellen
+- Golv, väggar och möbler i rätt proportioner enligt planens skala i meter. Väggarna är ca 2,6 m höga med synlig tjocklek, och dörröppningar och fönster har glas.
+- Riktig djupkänsla:
+  - Ett tydligt perspektiv.
+  - En ljuskälla, så att väggarnas och möblernas sidor får olika ljushet.
+  - Mjuka skuggor på golvet.
+  - Golvmaterial: trä i rummen, klinker i badrum, och däck, gräs eller sten ute.
+- Möblerna är riktiga 3D-block med höjd: sängar med kuddar, soffor med ryggstöd, bord, köksbänkar med överskåp och växter.
+- Allt utomhus som finns i planen byggs också:
+  - Pool som en nedsänkt vattenyta med kakelkant och skimrande vatten (CSS-animation).
+  - Bubbelpool eller badtunna som bubblar.
+  - Trädäck, gräs, träd och buskar, solstolar, brygga, bastu och räcken.
+- Rumsnamn och yta ligger på golvet.
+- Skriv golv, väggar och möbler som HTML-element direkt i markupen med inline-positioner, i ordningen mark och golv → ytterväggar → innerväggar → möbler och utemiljö. Då byggs bostaden upp bit för bit medan koden strömmar in. JavaScript lägger bara till interaktion.
+
+Layout och interaktion
+- 3D-modellen är huvudsaken och tar upp minst 70 % av bredden och hela höjden. Objektinformation och kalkyl ligger i en smal panel (ca 340 px) vid sidan.
+- Startvyn är snett ovanifrån och visar hela bostaden. Modellen roterar långsamt av sig själv tills användaren rör den.
+- Dra för att rotera. Zooma med scroll eller knappar. Växla mellan 3D och 2D ovanifrån, och återställ vyn.
+- Väggar som skymmer sänks automatiskt mot kameran.
+- Ett klick på ett rum markerar det och visar namn och yta.
+- Panelen visar objektinformationen från skissen och en månadskostnadskalkyl med reglage för kontantinsats (minst 15 %), ränta och amortering. Kalkylen visar lån, räntekostnad, amortering, avgift eller driftkostnad och total kostnad per månad.`;
 
 export const SKETCHES: Sketch[] = [
-  { id: "lgh-etta", title: "Etta · Vasastan", category: "Lägenheter", subtitle: "1 rok · 34 m² · 2 950 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-tvaa", title: "Tvåa · Södermalm", category: "Lägenheter", subtitle: "2 rok · 56 m² · 4 450 000 kr", brief: APARTMENT_BRIEF },
-  { id: "lgh-trea", title: "Trea · Kungsholmen", category: "Lägenheter", subtitle: "3 rok · 78 m² · 6 250 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-etta", title: "Etta · Vasastan", category: "Lägenheter", subtitle: "1 rok · 34 m²\n2 950 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-tvaa", title: "Tvåa · Södermalm", category: "Lägenheter", subtitle: "2 rok · 56 m²\n4 450 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-trea", title: "Trea · Kungsholmen", category: "Lägenheter", subtitle: "3 rok · 78 m²\n6 250 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-villa", title: "Villa · Djursholm", category: "Lägenheter", subtitle: "Pool & altan\n14 750 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-takvaning", title: "Takvåning · Östermalm", category: "Lägenheter", subtitle: "Jacuzzi på taket\n18 900 000 kr", brief: APARTMENT_BRIEF },
+  { id: "lgh-sjostuga", title: "Sjöstuga · Värmdö", category: "Lägenheter", subtitle: "Bastu & brygga\n6 900 000 kr", brief: APARTMENT_BRIEF },
 ];
 
 export const sketchImage = (id: string) => `/sketches/${id}.jpg`;

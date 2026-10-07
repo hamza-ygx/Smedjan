@@ -85,7 +85,7 @@ function draw(def){
       case"input":{if(e.label)text(e.x+4,e.y-10,e.label,{size:26,color:GREY});rect(e.x,e.y,e.w,e.h,{strokeWidth:2.2});
         if(e.placeholder)text(e.x+18,e.y+e.h/2+11,e.placeholder,{size:30,color:GREY});break}
       case"line":line(e.x1,e.y1,e.x2,e.y2,e.light?{strokeWidth:1.2,stroke:"#9aa0aa"}:{stroke:e.color||INK,strokeWidth:e.strokeWidth||2.4});break;
-      case"scribble":{const pts=[];for(let i=0;i<=e.w;i+=14)pts.push([e.x+i,e.y+Math.sin(i/9)*5+jit(2)]);add(rc.curve(pts,opt({strokeWidth:2,stroke:"#55607a",roughness:0.8})));break}
+      case"scribble":{const pts=[];for(let i=0;i<=e.w;i+=14)pts.push([e.x+i,e.y+Math.sin(i/9)*5+jit(2)]);add(rc.curve(pts,opt({strokeWidth:2,stroke:e.color||"#55607a",roughness:0.8})));break}
       case"img":rect(e.x,e.y,e.w,e.h,{});line(e.x,e.y,e.x+e.w,e.y+e.h,{strokeWidth:1.6,stroke:"#9aa0aa"});line(e.x+e.w,e.y,e.x,e.y+e.h,{strokeWidth:1.6,stroke:"#9aa0aa"});break;
       case"note":{const t=text(e.x,e.y,e.text,{size:e.size||38,font:"Caveat",color:RED,weight:700,rot:jit(2.5)});
         if(!e.noArrow&&e.to){const b=t.getBBox();const [tx,ty]=e.to;
